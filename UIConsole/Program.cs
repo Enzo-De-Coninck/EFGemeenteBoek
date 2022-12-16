@@ -1,5 +1,5 @@
 ﻿using Model.Entities;
-//using Model.Services;
+using Model.Services;
 using Model.Repositories;
 using System.Text;
 using System;
@@ -17,7 +17,7 @@ public partial class Program
     //private static readonly SecurityService securityService = new SecurityService(securityRepository);
 
     //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
-    //private static readonly AccountService ProfielService = new AccountService(context);
+    private static readonly AccountService accountService = new AccountService(accountRepository);
 
     //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
     //private static readonly BerichtService BerichtService = new BerichtService(context);
@@ -89,6 +89,27 @@ public partial class Program
 
     public static void Inloggen()
     {
+        if (!(CurrentAccount is null))
+        {
+            ToonFoutBoodschap("Account is al ingelogd. Log eerst uit aub");
+            return;
+        }
+
+        int userId = -1;
+        var gebruikersnaam = string.Empty;
+        var loginOk = false;
+        Persoon account = null!;
+
+        gebruikersnaam = LeesString("Gebruikersnaam <Enter>=Terug", 50, OptionMode.Optional);
+
+        while ((gebruikersnaam != string.Empty) & (userId == -1))
+        {
+            try
+            {
+                userId = accountSer
+            }
+        }
+          
     }
 
     public static void Uitloggen()
