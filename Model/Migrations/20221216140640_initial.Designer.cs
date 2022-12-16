@@ -12,7 +12,7 @@ using Model.Repositories;
 namespace Model.Migrations
 {
     [DbContext(typeof(EFGemeenteBoekContext))]
-    [Migration("20221216134259_initial")]
+    [Migration("20221216140640_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -466,24 +466,24 @@ namespace Model.Migrations
                     b.HasOne("Model.Entities.BerichtType", "BerichtType")
                         .WithMany("Berichten")
                         .HasForeignKey("BerichtTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Model.Entities.Gemeente", "Gemeente")
                         .WithMany("Berichten")
                         .HasForeignKey("GemeenteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Model.Entities.Bericht", "HoofdBericht")
                         .WithMany("Berichten")
                         .HasForeignKey("HoofdBerichtId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Model.Entities.Profiel", "Profiel")
                         .WithMany("Berichten")
                         .HasForeignKey("PersoonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("BerichtType");
@@ -537,7 +537,7 @@ namespace Model.Migrations
                         .WithMany("Personen")
                         .HasForeignKey("TaalId")
                         .HasPrincipalKey("TaalId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Adres");

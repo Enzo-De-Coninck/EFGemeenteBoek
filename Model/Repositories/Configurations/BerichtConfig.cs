@@ -24,12 +24,12 @@ class BerichtConfig : IEntityTypeConfiguration<Bericht>
 
         builder.HasOne(b => b.HoofdBericht)
             .WithMany(b => b.Berichten)
-            .OnDelete(DeleteBehavior.Cascade)
+            .OnDelete(DeleteBehavior.NoAction)
             .HasForeignKey(b => b.HoofdBerichtId);
 
         builder.HasOne(b => b.Gemeente)
             .WithMany(g => g.Berichten)
-            .OnDelete(DeleteBehavior.Cascade)
+            .OnDelete(DeleteBehavior.NoAction)
             .HasForeignKey(b => b.GemeenteId);
 
         builder.HasIndex(b => b.GemeenteId);
@@ -39,12 +39,12 @@ class BerichtConfig : IEntityTypeConfiguration<Bericht>
 
         builder.HasOne(b => b.Profiel)
             .WithMany(p => p.Berichten)
-            .OnDelete(DeleteBehavior.Cascade)
+            .OnDelete(DeleteBehavior.NoAction)
             .HasForeignKey(b => b.PersoonId);
 
         builder.HasOne(b => b.BerichtType)
             .WithMany(b => b.Berichten)
-            .OnDelete(DeleteBehavior.Cascade)
+            .OnDelete(DeleteBehavior.NoAction)
             .HasForeignKey(b => b.BerichtTypeId);
 
         builder.Property(b => b.BerichtTijdstip)

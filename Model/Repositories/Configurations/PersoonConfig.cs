@@ -56,6 +56,7 @@ class PersoonConfig : IEntityTypeConfiguration<Persoon>
 
         builder.Property(p => p.TaalId)
             .IsRequired();
+            
 
         builder.HasOne(p => p.Adres)
             .WithMany(p => p.Personen)
@@ -64,5 +65,10 @@ class PersoonConfig : IEntityTypeConfiguration<Persoon>
         builder.HasOne(p => p.Geboorteplaats)
             .WithMany(p => p.Personen)
             .HasForeignKey(p => p.GeboorteplaatsId);
+
+        builder.HasOne(p => p.Taal)
+            .WithMany(t => t.Personen)
+            .HasPrincipalKey(p => p.TaalId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

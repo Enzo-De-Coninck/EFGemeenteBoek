@@ -10,6 +10,8 @@ class InteresseSoortConfig : IEntityTypeConfiguration<InteresseSoort>
     {
         builder.ToTable("InteresseSoorten");
 
+        builder.HasKey(i => i.InteresseSoortId);
+
         builder.Property(i => i.InteresseSoortNaam)
             .IsRequired()
             .HasMaxLength(30);

@@ -213,8 +213,7 @@ namespace Model.Migrations
                         name: "FK_Personen_Talen_TaalId",
                         column: x => x.TaalId,
                         principalTable: "Talen",
-                        principalColumn: "TaalId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "TaalId");
                 });
 
             migrationBuilder.CreateTable(
@@ -238,26 +237,22 @@ namespace Model.Migrations
                         name: "FK_Berichten_BerichtTypes_BerichtTypeId",
                         column: x => x.BerichtTypeId,
                         principalTable: "BerichtTypes",
-                        principalColumn: "BerichtTypeId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "BerichtTypeId");
                     table.ForeignKey(
                         name: "FK_Berichten_Berichten_HoofdBerichtId",
                         column: x => x.HoofdBerichtId,
                         principalTable: "Berichten",
-                        principalColumn: "BerichtId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "BerichtId");
                     table.ForeignKey(
                         name: "FK_Berichten_Gemeenten_GemeenteId",
                         column: x => x.GemeenteId,
                         principalTable: "Gemeenten",
-                        principalColumn: "GemeenteId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "GemeenteId");
                     table.ForeignKey(
                         name: "FK_Berichten_Personen_PersoonId",
                         column: x => x.PersoonId,
                         principalTable: "Personen",
-                        principalColumn: "PersoonId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "PersoonId");
                 });
 
             migrationBuilder.CreateTable(

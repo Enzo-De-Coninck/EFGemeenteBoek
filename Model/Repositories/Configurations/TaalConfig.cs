@@ -24,8 +24,9 @@ class TaalConfig : IEntityTypeConfiguration<Taal>
             .WithOne(g => g.Taal)
             .HasPrincipalKey(t => t.TaalId);
 
-        builder.HasMany(t => t.Personen)
-            .WithOne(p => p.Taal)
-            .HasPrincipalKey(t => t.TaalId);
+        //builder.HasMany(t => t.Personen)
+        //    .WithOne(p => p.Taal)
+        //    .HasPrincipalKey(t => t.TaalId)
+        //    .OnDelete(DeleteBehavior.);
     }
 }
