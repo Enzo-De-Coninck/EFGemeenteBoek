@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Model.Repositories.Configurations;
-//using Model.Repositories.Seeding;
+using Model.Repositories.Seeding;
 
 namespace Model.Repositories;
 
@@ -79,6 +79,15 @@ public class EFGemeenteBoekContext : DbContext
         // -------
         // Seeding
         // -------
+        modelBuilder.ApplyConfiguration(new AdresSeeding());
+        modelBuilder.ApplyConfiguration(new AfdelingSeeding());
+        modelBuilder.ApplyConfiguration(new BerichtTypeSeeding());
+        modelBuilder.ApplyConfiguration(new GemeenteSeeding());
+        modelBuilder.ApplyConfiguration(new InteresseSoortSeeding());
+        modelBuilder.ApplyConfiguration(new MedewerkerSeeding());
+        modelBuilder.ApplyConfiguration(new ProvincieSeeding());
+        modelBuilder.ApplyConfiguration(new StraatSeeding());
+        modelBuilder.ApplyConfiguration(new TaalSeeding());
     }
 
 
