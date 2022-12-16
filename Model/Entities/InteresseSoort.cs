@@ -12,7 +12,7 @@ public class InteresseSoort
     // Properties
     // ----------
     public int InteresseSoortId { get; set; }
-    public string InteresseSoortNaam { get; set; }
+    public string InteresseSoortNaam { get; set; } = null!;
 
 
     // ---------------------

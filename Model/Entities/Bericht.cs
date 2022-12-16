@@ -12,7 +12,7 @@ public class Bericht
     // Properties
     // ----------
     public int BerichtId { get; set; }
-    public int HoofdBerichtId { get; set; }
+    public int? HoofdBerichtId { get; set; }
     public int GemeenteId { get; set; }
     public int PersoonId { get; set; }
     public int BerichtTypeId { get; set; }
@@ -24,8 +24,8 @@ public class Bericht
     // Navigation properties
     // ---------------------
     public virtual Gemeente Gemeente { get; set; } = null!;
-    public virtual Bericht HoofdBericht { get; set; }
+    public virtual Bericht? HoofdBericht { get; set; }
     public virtual BerichtType BerichtType { get; set; } = null!;
     public virtual Profiel Profiel { get; set; } = null!;
-    public virtual ICollection<Bericht> Berichten { get; set; }
+    public virtual ICollection<Bericht>? Berichten { get; set; }
 }

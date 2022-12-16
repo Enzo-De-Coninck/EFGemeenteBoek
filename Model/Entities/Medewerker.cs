@@ -17,5 +17,5 @@ public class Medewerker : Persoon
     // ---------------------
     // Navigation properties
     // ---------------------
-    public virtual Afdeling Afdeling { get; set; }
+    public virtual Afdeling Afdeling { get; set; } = null!;
 }

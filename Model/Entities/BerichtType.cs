@@ -8,7 +8,7 @@ public class BerichtType
     public int BerichtTypeId { get; set; }
     public string BerichtTypeCode { get; set; } = null!;
     public string BerichtTypeNaam { get; set; } = null!;
-    public string BerichtTypeTekst { get; set; }
+    public string? BerichtTypeTekst { get; set; }
 
 
 

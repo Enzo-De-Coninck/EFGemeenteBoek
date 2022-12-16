@@ -9,6 +9,8 @@ class TaalConfig : IEntityTypeConfiguration<Taal>
 {
     public void Configure(EntityTypeBuilder<Taal> builder)
     {
+        builder.ToTable("Talen");
+        
         builder.HasKey(b => new { b.TaalId, b.TaalCode });
 
         builder.Property(b => b.TaalCode)

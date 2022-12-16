@@ -20,5 +20,5 @@ public class Straat
     // Navigation properties
     // ---------------------
     public virtual Gemeente Gemeente { get; set; } = null!;
-    public virtual ICollection<Adres> Adressen { get; set; }
+    public virtual ICollection<Adres>? Adressen { get; set; }
 }

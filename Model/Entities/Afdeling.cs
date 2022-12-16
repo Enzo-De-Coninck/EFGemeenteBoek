@@ -14,7 +14,7 @@ public class Afdeling
     public int AfdelingId { get; set; }
     public string AfdelingCode { get; set; } = null!;
     public string AfdelingNaam { get; set; } = null!;
-    public string AfdelingTekst { get; set; }
+    public string? AfdelingTekst { get; set; }
 
 
     // ---------------------

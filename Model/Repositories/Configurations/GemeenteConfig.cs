@@ -27,6 +27,7 @@ class GemeenteConfig : IEntityTypeConfiguration<Gemeente>
             .WithMany(s => s.Gemeenten)
             .HasForeignKey(b => b.ProvincieId);
 
-        
+       
+
     }
 }

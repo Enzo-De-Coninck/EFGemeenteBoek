@@ -9,6 +9,8 @@ class AdresConfig : IEntityTypeConfiguration<Adres>
 {
     public void Configure(EntityTypeBuilder<Adres> builder)
     {
+        builder.ToTable("Adressen");
+
         builder.HasKey(b => b.AdresId);
 
         builder.Property(b => b.StraatId)

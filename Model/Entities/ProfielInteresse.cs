@@ -13,7 +13,7 @@ public class ProfielInteresse
     // ----------
     public int PersoonId { get; set; }
     public int InteresseSoortId { get; set; }
-    public string ProfielInteresseTekst { get; set; }
+    public string? ProfielInteresseTekst { get; set; }
 
 
     // ---------------------

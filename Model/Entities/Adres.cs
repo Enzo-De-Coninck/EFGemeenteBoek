@@ -15,7 +15,7 @@ public class Adres
     public int AdresId { get; set; }
     public int StraatId { get; set; }
     public string HuisNr { get; set; } = null!;
-    public string BusNr { get; set; }
+    public string? BusNr { get; set; }
 
 
 
