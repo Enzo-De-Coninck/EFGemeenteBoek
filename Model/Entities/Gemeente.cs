@@ -25,7 +25,7 @@ public class Gemeente
     // ---------------------
     public virtual Provincie Provincie { get; set; } = null!;
     public virtual Gemeente? Hoofdgemeente { get; set; }
-    public virtual ICollection<Gemeente>? Deelgemeenten { get; set; }
+    public virtual ICollection<Gemeente>? Gemeenten { get; set; }
     public virtual Taal Taal { get; set; } = null!;
     public virtual ICollection<Persoon>? Personen { get; set; } = new List<Persoon>();
     public virtual ICollection<Bericht>? Berichten { get; set; } = new List<Bericht>();

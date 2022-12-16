@@ -33,6 +33,6 @@ public abstract class Persoon
     public virtual Adres Adres { get; set; } = null!;
     public virtual Gemeente? Geboorteplaats { get; set; }
     public virtual Taal Taal { get; set; } = null!;
-    public virtual Afdeling Afdeling { get; set; } = null!;
+    
 
 }

@@ -9,6 +9,8 @@ class ProfielConfig : IEntityTypeConfiguration<Profiel>
 {
     public void Configure(EntityTypeBuilder<Profiel> builder)
     {
+        
+        
         builder.Property(p => p.KennismakingTekst)
             .IsRequired()
             .HasMaxLength(255);

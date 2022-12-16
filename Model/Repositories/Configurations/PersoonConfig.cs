@@ -10,6 +10,10 @@ class PersoonConfig : IEntityTypeConfiguration<Persoon>
     public void Configure(EntityTypeBuilder<Persoon> builder)
     {
         builder.ToTable("Personen");
+
+        builder.HasDiscriminator<string>("PersoonType")
+            .HasValue<Medewerker>("M")
+            .HasValue<Profiel>("P");
         
         builder.HasKey(p => p.PersoonId);
 

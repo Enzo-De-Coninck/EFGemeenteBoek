@@ -26,6 +26,8 @@ public class EFGemeenteBoekContext : DbContext
     public DbSet<ProfielInteresse> ProfielInteresses { get; set; } = null!;
     public DbSet<Bericht> Berichten { get; set; } = null!;
     public DbSet<BerichtType> BerichtTypes { get; set; } = null!;
+    public DbSet<Profiel> Profielen { get; set; } = null!;
+    public DbSet<Medewerker> Medewerkers { get; set; } = null!;
 
     // ------------
     // Constructors
