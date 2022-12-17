@@ -3,6 +3,8 @@ using Model.Services;
 using Model.Repositories;
 using System.Text;
 using System;
+using System.Security.Principal;
+using System.Numerics;
 
 namespace UIConsole;
 
@@ -16,7 +18,7 @@ public partial class Program
     //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
     //private static readonly SecurityService securityService = new SecurityService(securityRepository);
 
-    //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
+    private static readonly IAccountRepository accountRepository = new SQLAccountRepository(context);
     private static readonly AccountService accountService = new AccountService(accountRepository);
 
     //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
@@ -99,6 +101,8 @@ public partial class Program
         var gebruikersnaam = string.Empty;
         var loginOk = false;
         Persoon account = null!;
+        Profiel profiel = null!;
+        Medewerker medewerker = null!;
 
         gebruikersnaam = LeesString("Gebruikersnaam <Enter>=Terug", 50, OptionMode.Optional);
 
@@ -106,8 +110,44 @@ public partial class Program
         {
             try
             {
-                userId = accountSer
+                userId = accountService.GetPersoonIdByNameAsync(gebruikersnaam!).Result;
             }
+            catch (Exception ex)
+            {
+                ToonFoutBoodschap(ex.InnerException!.InnerException!.Message.ToString());
+                return;
+            }
+
+            if (userId != -1)
+            {
+                account = accountService.GetPersoonByIdAsync(userId).Result;
+                if (account is Profiel) profiel = (Profiel)accountService.GetPersoonByIdAsync(userId).Result;
+                if (account is Medewerker) medewerker = (Medewerker)accountService.GetPersoonByIdAsync(userId).Result;
+
+                var wachtwoord = LeesString("Wachtwoord", 50);
+                if (wachtwoord == String.Empty) return;
+
+                if (account.LoginPaswoord == wachtwoord) loginOk= true;
+
+            }
+            else
+            {
+                ToonFoutBoodschap("Ongeldig account, probeer opnieuw");
+                gebruikersnaam = LeesString("Gebruikersnaam <Enter>Terug", 50, OptionMode.Optional);
+            }
+        }
+
+        if (loginOk)
+        {
+            if (account.Geblokkeerd)
+            {
+                ToonFoutBoodschap("Uw account is geblokkeerd, verwittig een medewerker");
+                return;
+            }
+            
+            account.LoginAantal++;
+
+            
         }
           
     }
@@ -118,14 +158,89 @@ public partial class Program
 
     public static void Registeren()
     {
+        var voornaam = LeesString("Voornaam (<Enter>=Terug)", 20, OptionMode.Optional);
+        DateTime minDate = new DateTime(1900, 1, 1);
+        DateTime maxDate = new DateTime(2022, 1, 1);
+
+        if (voornaam == string.Empty) return;
+
+        var familienaam = LeesString("Familienaam", 30, OptionMode.Mandatory);
+        var geboortedatum = LeesDatum("Geboortedatum (DD/MM/JJJJ)", minDate, maxDate, OptionMode.Mandatory);
+        var telefoonnr = LeesString("TelefoonNr", 30, OptionMode.Optional);
+        var kennismakingstekst = LeesString("Kennismaking Tekst", 255, OptionMode.Mandatory);
+        var emailadres = LeesString("EmailAdres", 25, OptionMode.Mandatory);
+        var beroep = LeesString("Beroep", 25, OptionMode.Optional);
+        var firma = LeesString("Firma", 25, OptionMode.Optional);
+        var facebooknaam = LeesString("FacebookNaam", 25, OptionMode.Optional);
+        var websiteurl = LeesString("Website URL", 25, OptionMode.Optional);
+        var geslacht = LeesString("Geslacht (M, V)", 1, OptionMode.Mandatory);
+        var woonthiersinds = LeesDatum("Woont hier sinds (DD/MM/YYYY)", minDate, maxDate, OptionMode.Optional);
+
+
+        // Login
+        Console.WriteLine("\n-->Ingave Login");
+
+        string gebruikersnaam = string.Empty;
+        string wachtwoord = string.Empty;
+
+        Geslacht hetGeslacht = Geslacht.M;
+        if (geslacht == "M")
+            hetGeslacht = Geslacht.M;
+        else if (geslacht == "V")
+            hetGeslacht = Geslacht.V;
+
+
+
+        while (true)
+        {
+            gebruikersnaam = LeesString("LoginNaam", 25, OptionMode.Mandatory)!;
+            wachtwoord = LeesString("Wachtwoord", 255, OptionMode.Mandatory)!;
+            if (!accountService.LoginBestaatAsync(gebruikersnaam).Result) break;
+            ToonFoutBoodschap("Deze login is reeds in gebruik.");
+        }
+
+        Console.WriteLine();
+
+        // Toevoegen profiel
+        var profiel = new Profiel()
+        {
+            VoorNaam = voornaam!,
+            FamilieNaam = familienaam!,
+            GeboorteDatum = geboortedatum!,
+            TelefoonNr = telefoonnr,
+            KennismakingTekst = kennismakingstekst,
+            EmailAdres = emailadres!,
+            BeroepTekst = beroep,
+            FirmaNaam = firma,
+            FacebookNaam = facebooknaam,
+            WebsiteAdres = websiteurl,
+            Geslacht = hetGeslacht,
+            CreatieTijdstip = DateTime.Now,
+            LaatsteUpdateTijdstip = DateTime.Now,
+            WoontHierSindsDatum = woonthiersinds
+        };
+
+        // Overzicht
+        ToonGegevens(profiel);
+
+        // Bevestiging + Bewaren
+        if ((bool)LeesBool("Bewaren OK ?", OptionMode.Mandatory)!)
+        {
+            profiel = accountService.VoegProfielToeAsync(profiel).Result;
+            ToonInfoBoodschap($"U werd toegevoegd als profiel (id: {profiel.PersoonId}).");
+        }
+        else
+            ToonInfoBoodschap("U werd niet toegevoegd als profiel.");
     }
 
-    public static void ToonGegevens(Persoon persoon)
+    public static void ToonPersoonGegevens(Persoon persoon)
     {
+
     }
 
-    public static void ToonGegevens()
+    public static void ToonGegevens(Profiel profiel)
     {
+
     }
 
     public static void WijzigGegevens()
