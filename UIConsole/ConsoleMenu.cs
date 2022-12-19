@@ -267,7 +267,7 @@ public partial class Program
 			menuTextForegroundActive = darkMode ? ConsoleColor.White : ConsoleColor.Black;
 			menuTextForegroundNotActive = ConsoleColor.Gray;
 
-			ToonMenuHoofding(appTitel, '=', false, 0);
+			ToonMenuHoofding(appTitel, '=', true, 0);
 			Console.WriteLine();
 
 			Console.WriteLine(@"oooooo    oooo  oooooooooo.         .o.       oooooooooo.");
@@ -506,7 +506,7 @@ public partial class Program
 	{
 		level++;
 
-		ToonMenuHoofding(menuItem.SubMenuTitel, '-', false, level);
+		ToonMenuHoofding(menuItem.SubMenuTitel, '-', true, level);
 
 		// Bepaal minimum lengte van een menuitemlabel
 		var labelLength = exitTextSubMenu.Length;
@@ -545,7 +545,7 @@ public partial class Program
 	{
 		level++;
 
-		ToonMenuHoofding(menuItem.SubMenuTitel, '-', false, level);
+		ToonMenuHoofding(menuItem.SubMenuTitel, '-', true, level);
 
 		// Bepaal minimum lengte van een menuitemlabel
 		var labelLength = exitTextSubMenu.Length;

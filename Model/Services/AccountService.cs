@@ -34,9 +34,9 @@ public class AccountService
         return await accountRepository.LoginBestaatAsync(gebruikersNaam);
     }
     // GetKlantByLoginName
-    public async Task<Persoon> GetPersoonIdByLoginNameAsync(string persoonlogin)
+    public async Task<int> GetProfielIdByLoginNameAsync(string persoonlogin)
     {
-        return await accountRepository.GetPersoonIdByLoginNameAsync(persoonlogin);
+        return await accountRepository.GetProfielIdByLoginNameAsync(persoonlogin);
     }
     // Activeer klant
     public async Task ActiveerKlantAsync(Profiel profiel)
@@ -53,5 +53,23 @@ public class AccountService
     public async Task<IEnumerable<Taal>> GetAllTalenAsync()
     {
         return await accountRepository.GetAllTalenAsync();
+    }
+
+    // Get alle gemeenten
+    public async Task<IEnumerable<Gemeente>> GetAllGemeenteAsync(string aantalLetters)
+    {
+        return await accountRepository.GetAllGemeenteAsync(aantalLetters);
+    }
+
+    // Get alle straten
+    public async Task<IEnumerable<Straat>> GetAllStratenAsync(string aantalLetters, int gemeenteid)
+    {
+        return await accountRepository.GetAllStratenAsync(aantalLetters, gemeenteid);
+    }
+
+    // Get alle interesses
+    public async Task<IEnumerable<InteresseSoort>> GetAllInteressesAsync()
+    {
+        return await accountRepository.GetAllInteressesAsync();
     }
 }

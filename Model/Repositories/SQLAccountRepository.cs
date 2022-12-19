@@ -38,9 +38,10 @@ public class SQLAccountRepository : IAccountRepository
         return await Task.FromResult(context.Personen.Where(g => g.LoginNaam == gebruikersNaam).FirstOrDefault() != null);
     }
     // GetKlantByLoginName
-    public async Task<Persoon> GetPersoonIdByLoginNameAsync(string klantlogin)
+    public async Task<int> GetProfielIdByLoginNameAsync(string persoonlogin)
     {
-        return (await context.Personen.Where(k => k.LoginNaam == klantlogin).FirstOrDefaultAsync())!;
+        var profiel = await context.Profielen.Where(k => k.LoginNaam == persoonlogin).FirstOrDefaultAsync();
+        return profiel.PersoonId;
     }
     // Activeer klant
     public async Task ActiveerProfielAsync(Profiel profiel)
@@ -59,5 +60,29 @@ public class SQLAccountRepository : IAccountRepository
     public async Task<IEnumerable<Taal>> GetAllTalenAsync()
     {
         return await context.Talen.OrderBy(t => t.TaalId).ToListAsync();
+    }
+
+    // Get alle gemeente
+    public async Task<IEnumerable<Gemeente>> GetAllGemeenteAsync(string aantalLetters)
+    {
+        return await context.Gemeenten.Where(g => g.GemeenteNaam.Contains(aantalLetters)).OrderBy(g => g.GemeenteId).ToListAsync();
+    }
+
+    // Get alle straten
+    public async Task<IEnumerable<Straat>> GetAllStratenAsync(string aantalLetters, int gemeenteid)
+    {
+        var lijst = new List<Straat>();
+        var straten = context.Straten.Where(s => s.StraatNaam.Contains(aantalLetters)).OrderBy(s => s.StraatId).ToList();
+        foreach (var straat in straten)
+        {
+            if (straat.GemeenteId == gemeenteid)
+                lijst.Add(straat);
+        }
+        return lijst;
+    }
+
+    public async Task<IEnumerable<InteresseSoort>> GetAllInteressesAsync()
+    {
+        return await context.InteresseSoorten.OrderBy(i => i.InteresseSoortId).ToListAsync();
     }
 }

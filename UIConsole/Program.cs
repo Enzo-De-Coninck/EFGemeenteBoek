@@ -27,7 +27,7 @@ public partial class Program
     private static Persoon? CurrentAccount { get; set; }
     private static Bericht CurrentBericht { get; set; } = null!;
 
-    
+
 
     public static string MenuGegevens => $"{(CurrentAccount == null ? "Niet ingelogd" : (CurrentAccount is Profiel ? "PROFIEL: " : "MEDEWERKER: ") + "Nr: " + CurrentAccount.PersoonId + " - Naam: " + CurrentAccount.LoginNaam)}";
 
@@ -81,10 +81,16 @@ public partial class Program
 
     public static void GoedkeurenNieuwProfiel()
     {
+        string naam = LeesString("Geef de naam van het profiel dat goedgekeurd moet worden <Enter>=Terug:", 10, OptionMode.Optional)!;
+        var userId = accountService.GetProfielIdByLoginNameAsync(naam)!;
+        var profiel = (Profiel)context.Personen.Find(userId)!;
+        profiel.GoedgekeurdTijdstip = DateTime.Now;
+        Console.WriteLine("Profiel is goedgekeurd...");
     }
 
     public static void BlokkerenProfiel()
     {
+
     }
 
     public static void DeblokkerenProfiel()
@@ -122,11 +128,11 @@ public partial class Program
             if (userId != -1)
             {
                 account = accountService.GetPersoonByIdAsync(userId).Result;
-                
+
                 var wachtwoord = LeesString("Wachtwoord", 50);
                 if (wachtwoord == String.Empty) return;
 
-                if (account.LoginPaswoord == wachtwoord) loginOk= true;
+                if (account.LoginPaswoord == wachtwoord) loginOk = true;
 
             }
             else
@@ -143,7 +149,7 @@ public partial class Program
                 ToonFoutBoodschap("Uw account is geblokkeerd, verwittig een medewerker");
                 return;
             }
-            
+
             account.LoginAantal++;
 
             if (account is Medewerker)
@@ -164,13 +170,14 @@ public partial class Program
                 SetActive(menu, new List<int> { 3, 5 }, MenuItemActive.Disabled);
                 SetVisible(menu, new List<int> { 3, 5 }, MenuItemVisible.Hidden);
 
-            } else
+            }
+            else
             {
                 ToonInfoBoodschap("not imp");
             }
 
         }
-          
+
     }
 
     public static void Uitloggen()
@@ -206,17 +213,52 @@ public partial class Program
         var woonthiersinds = LeesDatum("Woont hier sinds (DD/MM/YYYY)", minDate, maxDate, OptionMode.Optional);
 
         // Kies taal
-        while(true)
+        var talen = accountService.GetAllTalenAsync().Result;
+        var taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+
+        ToonInfoBoodschap($"De gekozen taal is {taal.TaalCode} - {taal.TaalNaam}.");
+
+
+        // Kies geboorteplaats
+        Console.WriteLine("Kies geboorteplaats\n-----------------------");
+        var letters = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+        if (letters == null) letters = "";
+        var gemeentes = accountService.GetAllGemeenteAsync(letters).Result;
+        var gemeente = (Gemeente)LeesLijst("", gemeentes, gemeentes.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Optional).FirstOrDefault()!;
+
+        ToonInfoBoodschap($"De gekozen geboorteplaats is {gemeente.GemeenteNaam}.");
+
+        // Ingave Adres
+        Console.WriteLine("\n--> Ingave Adres");
+        Console.WriteLine("Kies Woonplaats\n-----------------------");
+        var lettersWoonplaats = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+        if (lettersWoonplaats == null) lettersWoonplaats = "";
+        var gemeentez = accountService.GetAllGemeenteAsync(lettersWoonplaats).Result;
+        var woonplaats = (Gemeente)LeesLijst("", gemeentez, gemeentez.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+        ToonInfoBoodschap($"De gekozen woonplaats is {woonplaats.GemeenteNaam}.");
+
+        // Ingave Adres - Kies straat
+        Console.WriteLine("Kies straat\n-----------------------");
+        var lettersStraat = LeesString("Geef een aantal letters in van de straat:", 5, OptionMode.Optional);
+        if (lettersStraat == null) lettersStraat = "";
+        var straten = accountService.GetAllStratenAsync(lettersStraat, woonplaats.GemeenteId).Result;
+        var straat = (Straat)LeesLijst("", straten, straten.Select(s => s.StraatNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+        ToonInfoBoodschap($"De gekozen straat is {straat.StraatNaam}.\n");
+
+        // Ingave Adres - Huis & bus NR
+        var huisnummer = LeesString("HuisNummer:", 5, OptionMode.Mandatory)!;
+        var busnummer = LeesString("BusNummer:", 5, OptionMode.Optional);
+
+        Adres adres = new Adres()
         {
-            var talen = accountService.GetAllTalenAsync().Result;
-            var taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalId + "\t" + t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+            StraatId = straat.StraatId,
+            HuisNr = huisnummer,
+            BusNr = busnummer,
+        };
 
-            if (taal == null) break;
 
-            ToonInfoBoodschap($"De gekozen taal is {taal.TaalCode} - {taal.TaalNaam}.");
-            KiesGeboorteplaats();
-        }
 
+        Console.WriteLine("\n\n");
 
         // Login
         Console.WriteLine("\n-->Ingave Login");
@@ -240,6 +282,12 @@ public partial class Program
             ToonFoutBoodschap("Deze login is reeds in gebruik.");
         }
 
+
+        // Toevoegen interesses
+        Console.WriteLine("\n-->Ingave Interesses");
+        var interesses = accountService.GetAllInteressesAsync().Result;
+        var interessez = LeesLijst("Kies Interesses (gescheiden door een komma)", interesses, interesses.Select(i => i.InteresseSoortNaam).ToList(), SelectionMode.Multiple, OptionMode.Optional);
+
         Console.WriteLine();
 
         // Toevoegen profiel
@@ -258,7 +306,13 @@ public partial class Program
             Geslacht = hetGeslacht,
             CreatieTijdstip = DateTime.Now,
             LaatsteUpdateTijdstip = DateTime.Now,
-            WoontHierSindsDatum = woonthiersinds
+            WoontHierSindsDatum = woonthiersinds,
+            Taal = taal,
+            Adres = adres,
+            LoginAantal = 0,
+            LoginNaam = gebruikersnaam,
+            LoginPaswoord = wachtwoord,
+            GeboorteplaatsId = gemeente.GemeenteId
         };
 
         // Overzicht
@@ -274,13 +328,7 @@ public partial class Program
             ToonInfoBoodschap("U werd niet toegevoegd als profiel.");
     }
 
-    
-    public static void KiesGeboorteplaats()
-    {
 
-    }
-    
-    
     public static void ToonPersoonGegevens(Persoon persoon)
     {
 
@@ -322,4 +370,6 @@ public partial class Program
     //public static Bericht? KiesBericht(string titel, OptionMode optionMode)
     //{
     //}
+
+    
 }

@@ -350,7 +350,7 @@ public partial class Program
 			int intKeuze;
 			int seq = 0;
 
-			displayValues.ForEach(i => Console.WriteLine($"{(selectionMode == SelectionMode.None ? string.Empty : string.Format("{0:0000}\t", ++seq))}{i}"));
+			displayValues.ForEach(i => Console.WriteLine($"{(selectionMode == SelectionMode.None ? string.Empty : string.Format("{0:0}\t", ++seq))}{i}"));
 
 			// Multiple selection
 			if (selectionMode == SelectionMode.Multiple)
