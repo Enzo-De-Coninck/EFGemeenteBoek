@@ -12,7 +12,7 @@ public class Profiel : Persoon
     // Properties
     // ----------
     public string KennismakingTekst { get; set; } = null!;
-    public DateTime WoontHierSindsDatum { get; set; }
+    public DateTime? WoontHierSindsDatum { get; set; }
     public string? BeroepTekst { get; set; }
     public string? FirmaNaam { get; set; }
     public string? WebsiteAdres { get; set; }

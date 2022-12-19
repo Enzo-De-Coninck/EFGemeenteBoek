@@ -55,4 +55,9 @@ public class SQLAccountRepository : IAccountRepository
         await context.SaveChangesAsync();
         return nieuwProfiel;
     }
+    // Get alle talen
+    public async Task<IEnumerable<Taal>> GetAllTalenAsync()
+    {
+        return await context.Talen.OrderBy(t => t.TaalId).ToListAsync();
+    }
 }

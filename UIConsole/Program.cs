@@ -24,8 +24,10 @@ public partial class Program
     //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
     //private static readonly BerichtService BerichtService = new BerichtService(context);
 
-    private static Persoon CurrentAccount { get; set; } = null!;
+    private static Persoon? CurrentAccount { get; set; }
     private static Bericht CurrentBericht { get; set; } = null!;
+
+    
 
     public static string MenuGegevens => $"{(CurrentAccount == null ? "Niet ingelogd" : (CurrentAccount is Profiel ? "PROFIEL: " : "MEDEWERKER: ") + "Nr: " + CurrentAccount.PersoonId + " - Naam: " + CurrentAccount.LoginNaam)}";
 
@@ -41,22 +43,22 @@ public partial class Program
                 02,"<A>ccount","AccountMenu",MenuItemActive.Enabled, MenuItemVisible.Visible,new List<MenuItem>
                 {
                     new MenuAction (03,"<I>nloggen","Inloggen",MenuItemActive.Enabled, MenuItemVisible.Visible,Inloggen),
-                    new MenuAction (04,"<U>itloggen", "Uitloggen",MenuItemActive.Disabled, MenuItemVisible.Visible,Uitloggen),
+                    new MenuAction (04,"<U>itloggen", "Uitloggen",MenuItemActive.Disabled, MenuItemVisible.Hidden,Uitloggen),
                     new MenuLijn (),
                     new MenuAction (05,"<R>egistreren", "Registeren",MenuItemActive.Enabled, MenuItemVisible.Visible,Registeren),
                     new MenuLijn (),
-                    new MenuAction (06,"<T>oon profielgegevens", "Profielgegevens",MenuItemActive.Disabled, MenuItemVisible.Visible,ToonGegevens),
-                    new MenuAction (07,"<W>ijzig profielgegevens", "Wijzigen profiel",MenuItemActive.Disabled, MenuItemVisible.Visible,WijzigGegevens),
-                    new MenuAction (08,"<V>erwijder profiel","Verwijderen profiel",MenuItemActive.Disabled, MenuItemVisible.Visible,VerwijderGegevens),
+                    //new MenuAction (06,"<T>oon profielgegevens", "Profielgegevens",MenuItemActive.Disabled, MenuItemVisible.Visible,ToonGegevens),
+                    new MenuAction (07,"<W>ijzig profielgegevens", "Wijzigen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,WijzigGegevens),
+                    new MenuAction (08,"<V>erwijder profiel","Verwijderen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderGegevens),
                 }
             ),
             new MenuLijn (),
-            new MenuAction (09,"<G>oedkeuring nieuw profiel","Goedkeuren van een profiel",MenuItemActive.Disabled, MenuItemVisible.Visible,GoedkeurenNieuwProfiel),
-            new MenuAction (10,"<B>lokkeren van een profiel","Blokkeer een profiel",MenuItemActive.Disabled, MenuItemVisible.Visible,BlokkerenProfiel),
-            new MenuAction (11,"<D>eblokkeren van een profiel","Deblokkeer een profiel",MenuItemActive.Disabled, MenuItemVisible.Visible,DeblokkerenProfiel),
+            new MenuAction (09,"<G>oedkeuring nieuw profiel","Goedkeuren van een profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,GoedkeurenNieuwProfiel),
+            new MenuAction (10,"<B>lokkeren van een profiel","Blokkeer een profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,BlokkerenProfiel),
+            new MenuAction (11,"<D>eblokkeren van een profiel","Deblokkeer een profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,DeblokkerenProfiel),
             new MenuLijn (),
-            new MenuAction (12,"<N>ieuw bericht","Ingave nieuw bericht",MenuItemActive.Disabled, MenuItemVisible.Visible,InvoerenNieuwBericht),
-            new MenuAction (13,"<R>aadplegen berichten van uw hoofdgemeente","Berichten van de hoofdgemeente",MenuItemActive.Disabled, MenuItemVisible.Visible,RaadplegenBerichten),
+            new MenuAction (12,"<N>ieuw bericht","Ingave nieuw bericht",MenuItemActive.Disabled, MenuItemVisible.Hidden,InvoerenNieuwBericht),
+            new MenuAction (13,"<R>aadplegen berichten van uw hoofdgemeente","Berichten van de hoofdgemeente",MenuItemActive.Disabled, MenuItemVisible.Hidden,RaadplegenBerichten),
         }
     );
 
@@ -64,9 +66,9 @@ public partial class Program
     (
         01, null, "Raadplegen bericht", MenuItemActive.Disabled, MenuItemVisible.Visible, Direction.Horizontal, new List<MenuItem>
         {
-            new MenuAction (02,"<W>ijzigen","",MenuItemActive.Disabled, MenuItemVisible.Visible,WijzigBericht),
-            new MenuAction (03,"<V>erwijderen","",MenuItemActive.Disabled, MenuItemVisible.Visible,VerwijderBericht),
-            new MenuAction (04,"<A>ntwoorden","",MenuItemActive.Disabled, MenuItemVisible.Visible,AntwoordBericht),
+            new MenuAction (02,"<W>ijzigen","",MenuItemActive.Disabled, MenuItemVisible.Hidden,WijzigBericht),
+            new MenuAction (03,"<V>erwijderen","",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderBericht),
+            new MenuAction (04,"<A>ntwoorden","",MenuItemActive.Disabled, MenuItemVisible.Hidden,AntwoordBericht),
         }
     );
 
@@ -101,8 +103,7 @@ public partial class Program
         var gebruikersnaam = string.Empty;
         var loginOk = false;
         Persoon account = null!;
-        Profiel profiel = null!;
-        Medewerker medewerker = null!;
+        bool medewerker = false;
 
         gebruikersnaam = LeesString("Gebruikersnaam <Enter>=Terug", 50, OptionMode.Optional);
 
@@ -121,9 +122,7 @@ public partial class Program
             if (userId != -1)
             {
                 account = accountService.GetPersoonByIdAsync(userId).Result;
-                if (account is Profiel) profiel = (Profiel)accountService.GetPersoonByIdAsync(userId).Result;
-                if (account is Medewerker) medewerker = (Medewerker)accountService.GetPersoonByIdAsync(userId).Result;
-
+                
                 var wachtwoord = LeesString("Wachtwoord", 50);
                 if (wachtwoord == String.Empty) return;
 
@@ -147,13 +146,43 @@ public partial class Program
             
             account.LoginAantal++;
 
-            
+            if (account is Medewerker)
+                medewerker = true;
+            else
+                medewerker = false;
+
+            SetLabel(menu, new List<int> { 3 }, $"Ingelogd als '{(account.LoginNaam.Length > 5 ? string.Concat(account.LoginNaam.AsSpan(0, 5), "...") : account.LoginNaam)}'");
+
+            if (medewerker)
+            {
+                CurrentAccount = account;
+                ToonInfoBoodschap("Inloggen met succes voltooid");
+
+                // Menu
+                SetVisible(menu, new List<int> { 4, 6, 9, 10, 11 }, MenuItemVisible.Visible);
+                SetActive(menu, new List<int> { 4, 6, 9, 10, 11 }, MenuItemActive.Enabled);
+                SetActive(menu, new List<int> { 3, 5 }, MenuItemActive.Disabled);
+                SetVisible(menu, new List<int> { 3, 5 }, MenuItemVisible.Hidden);
+
+            } else
+            {
+                ToonInfoBoodschap("not imp");
+            }
+
         }
           
     }
 
     public static void Uitloggen()
     {
+        if (CurrentAccount is null)
+        {
+            ToonFoutBoodschap("Account is niet ingelogd");
+            return;
+        }
+
+        CurrentAccount = null!;
+        ResetMenu(menu);
     }
 
     public static void Registeren()
@@ -175,6 +204,18 @@ public partial class Program
         var websiteurl = LeesString("Website URL", 25, OptionMode.Optional);
         var geslacht = LeesString("Geslacht (M, V)", 1, OptionMode.Mandatory);
         var woonthiersinds = LeesDatum("Woont hier sinds (DD/MM/YYYY)", minDate, maxDate, OptionMode.Optional);
+
+        // Kies taal
+        while(true)
+        {
+            var talen = accountService.GetAllTalenAsync().Result;
+            var taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalId + "\t" + t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+
+            if (taal == null) break;
+
+            ToonInfoBoodschap($"De gekozen taal is {taal.TaalCode} - {taal.TaalNaam}.");
+            KiesGeboorteplaats();
+        }
 
 
         // Login
@@ -233,6 +274,13 @@ public partial class Program
             ToonInfoBoodschap("U werd niet toegevoegd als profiel.");
     }
 
+    
+    public static void KiesGeboorteplaats()
+    {
+
+    }
+    
+    
     public static void ToonPersoonGegevens(Persoon persoon)
     {
 

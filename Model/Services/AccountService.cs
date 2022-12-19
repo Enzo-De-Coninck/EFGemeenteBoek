@@ -48,4 +48,10 @@ public class AccountService
     {
         return await accountRepository.VoegProfielToeAsync(nieuwProfiel);
     }
+
+    // Get alle talen
+    public async Task<IEnumerable<Taal>> GetAllTalenAsync()
+    {
+        return await accountRepository.GetAllTalenAsync();
+    }
 }

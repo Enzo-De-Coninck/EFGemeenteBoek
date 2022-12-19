@@ -11,4 +11,5 @@ public interface IAccountRepository
     public Task<Persoon> GetPersoonIdByLoginNameAsync(string persoonlogin);
     public Task ActiveerProfielAsync(Profiel profiel);
     public Task<Profiel> VoegProfielToeAsync(Profiel nieuwProfiel);
+    public Task<IEnumerable<Taal>> GetAllTalenAsync();
 }

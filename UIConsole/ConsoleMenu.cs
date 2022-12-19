@@ -242,7 +242,7 @@ public partial class Program
 			if (((MenuAction)selectedItem).MenuItemAction00 != null)
 			{
 				if (selectedItem.SubMenuTitel != String.Empty)
-					ToonMenuHoofding(selectedItem.SubMenuTitel, '-', false);
+					ToonMenuHoofding(selectedItem.SubMenuTitel, '-', true);
 
 				((MenuAction)selectedItem).MenuItemAction00();
 			}
@@ -365,7 +365,7 @@ public partial class Program
 					if (((MenuAction)selectedItem).MenuItemAction00 != null)
 					{
 						if (selectedItem.SubMenuTitel != String.Empty)
-							ToonMenuHoofding(selectedItem.SubMenuTitel, '-', false);
+							ToonMenuHoofding(selectedItem.SubMenuTitel, '-', true);
 
 						((MenuAction)selectedItem).MenuItemAction00();
 					}
@@ -492,7 +492,7 @@ public partial class Program
 			menuTextForegroundNotActive = ConsoleColor.Gray;
 			menuTextBackground = darkMode ? ConsoleColor.Black : ConsoleColor.White;
 
-			ToonMenuHoofding(appTitel, '=', false);
+			ToonMenuHoofding(appTitel, '=', true);
 		}
 
 		if (menuItem.Richting == Direction.Vertical) PrintMenu(menuItem);
