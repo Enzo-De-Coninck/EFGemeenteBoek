@@ -712,6 +712,7 @@ public partial class Program
     public static void InvoerenNieuwBericht()
     {
 
+
     }
 
     public static void RaadplegenBerichten()
