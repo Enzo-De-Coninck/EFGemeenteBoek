@@ -104,7 +104,13 @@ public partial class Program
 
     public static void DeblokkerenProfiel()
     {
-
+        string naam = LeesString("Geef de naam van het profiel dat gedeblokkeerd moet worden <Enter>=Terug:", 10, OptionMode.Optional)!;
+        var userId = accountService.GetPersoonIdByNameAsync(naam).Result;
+        var profiel = (Profiel)context.Personen.Find(userId)!;
+        profiel.Geblokkeerd = false;
+        ToonInfoBoodschap($"{profiel.LoginNaam} is gedeblokkeerd");
+        profiel.LaatsteUpdateTijdstip = DateTime.Now;
+        context.SaveChanges();
     }
 
     public static void Inloggen()
