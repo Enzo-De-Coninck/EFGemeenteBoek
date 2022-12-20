@@ -85,7 +85,7 @@ public partial class Program
         var userId = accountService.GetPersoonIdByNameAsync(naam).Result;
         var profiel = (Profiel)context.Personen.Find(userId)!;
         profiel.GoedgekeurdTijdstip = DateTime.Now;
-        Console.WriteLine("Profiel is goedgekeurd...");
+        Console.WriteLine($"{profiel.LoginNaam} is goedgekeurd...");
         profiel.LaatsteUpdateTijdstip = DateTime.Now;
         context.SaveChanges();
 
@@ -93,11 +93,18 @@ public partial class Program
 
     public static void BlokkerenProfiel()
     {
-
+        string naam = LeesString("Geef de naam van het profiel dat geblokkeerd moet worden <Enter>=Terug:", 10, OptionMode.Optional)!;
+        var userId = accountService.GetPersoonIdByNameAsync(naam).Result;
+        var profiel = (Profiel)context.Personen.Find(userId)!;
+        profiel.Geblokkeerd = true;
+        ToonInfoBoodschap($"{profiel.LoginNaam} is geblokkeerd");
+        profiel.LaatsteUpdateTijdstip = DateTime.Now;
+        context.SaveChanges();
     }
 
     public static void DeblokkerenProfiel()
     {
+
     }
 
     public static void Inloggen()
@@ -671,6 +678,7 @@ public partial class Program
                 else
                 {
                     ToonInfoBoodschap("Uw profiel werd gewijzigd");
+                    profiel.LaatsteUpdateTijdstip = DateTime.Now;
                     context.SaveChanges();
                 }
             }
