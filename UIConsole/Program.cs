@@ -47,7 +47,7 @@ public partial class Program
                     new MenuLijn (),
                     new MenuAction (05,"<R>egistreren", "Registeren",MenuItemActive.Enabled, MenuItemVisible.Visible,Registeren),
                     new MenuLijn (),
-                    new MenuAction (06,"<T>oon profielgegevens", "Profielgegevens",MenuItemActive.Disabled, MenuItemVisible.Visible,ToonGegevens),
+                    new MenuAction (06,"<T>oon profielgegevens", "Profielgegevens",MenuItemActive.Disabled, MenuItemVisible.Hidden,ToonGegevens),
                     new MenuAction (07,"<W>ijzig profielgegevens", "Wijzigen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,WijzigGegevens),
                     new MenuAction (08,"<V>erwijder profiel","Verwijderen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderGegevens),
                 }
@@ -82,10 +82,13 @@ public partial class Program
     public static void GoedkeurenNieuwProfiel()
     {
         string naam = LeesString("Geef de naam van het profiel dat goedgekeurd moet worden <Enter>=Terug:", 10, OptionMode.Optional)!;
-        var userId = accountService.GetProfielIdByLoginNameAsync(naam)!;
+        var userId = accountService.GetPersoonIdByNameAsync(naam).Result;
         var profiel = (Profiel)context.Personen.Find(userId)!;
         profiel.GoedgekeurdTijdstip = DateTime.Now;
         Console.WriteLine("Profiel is goedgekeurd...");
+        profiel.LaatsteUpdateTijdstip = DateTime.Now;
+        context.SaveChanges();
+
     }
 
     public static void BlokkerenProfiel()
@@ -132,7 +135,7 @@ public partial class Program
                 var wachtwoord = LeesString("Wachtwoord", 50);
                 if (wachtwoord == String.Empty) return;
 
-                if (account.LoginPaswoord == wachtwoord) 
+                if (account.LoginPaswoord == wachtwoord)
                     loginOk = true;
                 else
                 {
@@ -143,7 +146,7 @@ public partial class Program
                         wachtwoord = LeesString("Wachtwoord", 50);
                         if (account.LoginPaswoord == wachtwoord) loginOk = true;
                     }
-                }    
+                }
 
             }
             else
@@ -163,12 +166,14 @@ public partial class Program
 
             account.LoginAantal++;
 
-            SetLabel(menu, new List<int> { 3 }, $"Ingelogd als '{(account.LoginNaam.Length > 5 ? string.Concat(account.LoginNaam.AsSpan(0, 5), "...") : account.LoginNaam)}'");
-            CurrentAccount = account;
+
 
             if (account is Medewerker)
             {
                 ToonInfoBoodschap("Inloggen met succes voltooid");
+                CurrentAccount = account;
+                SetLabel(menu, new List<int> { 3 }, $"Ingelogd als '{(account.LoginNaam.Length > 5 ? string.Concat(account.LoginNaam.AsSpan(0, 5), "...") : account.LoginNaam)}'");
+
 
                 // Menu
                 SetVisible(menu, new List<int> { 4, 6, 9, 10, 11 }, MenuItemVisible.Visible);
@@ -182,6 +187,8 @@ public partial class Program
                 if (profiel.GoedgekeurdTijdstip != null)
                 {
                     ToonInfoBoodschap("Inloggen met succes voltooid");
+                    CurrentAccount = profiel;
+                    SetLabel(menu, new List<int> { 3 }, $"Ingelogd als '{(account.LoginNaam.Length > 5 ? string.Concat(account.LoginNaam.AsSpan(0, 5), "...") : account.LoginNaam)}'");
 
                     // Menu
                     SetVisible(menu, new List<int> { 4, 6, 7, 8 }, MenuItemVisible.Visible);
@@ -318,9 +325,9 @@ public partial class Program
                 ProfielInteresseTekst = text
             };
             profielinteresses.Add(intresse);
-            
+
         }
-            
+
 
 
         Console.WriteLine();
@@ -377,72 +384,47 @@ public partial class Program
 
     public static void ToonPersoonGegevens(Persoon persoon)
     {
-        if (persoon is Medewerker)
-        {
-            Console.WriteLine("---------\nOverzicht\n---------\n");
-            Console.WriteLine($"Naam: {persoon.VoorNaam} {persoon.FamilieNaam}\n");
-            string busnr = String.Empty;
-            if (persoon.Adres.BusNr != null)
-                busnr = persoon.Adres.BusNr;
-            Console.WriteLine($"Adres: \t{persoon.Adres.Straat.StraatNaam} {persoon.Adres.HuisNr} {busnr}");
-            Console.WriteLine($"\t{persoon.Adres.Straat.Gemeente.PostCode} {persoon.Adres.Straat.Gemeente.GemeenteNaam}");
-            Console.WriteLine($"\t{persoon.Adres.Straat.Gemeente.Provincie.ProvincieNaam}\n");
-            Console.WriteLine($"Geboortedatum: {persoon.GeboorteDatum}");
-            string geslacht = "Man";
-            if (persoon.Geslacht == Geslacht.V)
-                geslacht = "Vrouw";
-            else
-                geslacht = "Man";
-            Console.WriteLine($"Geslacht: {geslacht}\n");
-            Console.WriteLine($"TelefoonNr: {persoon.TelefoonNr}\n");
-            string geblokkeerd = "Niet";
-            if (persoon.Geblokkeerd)
-                geblokkeerd = "Wel";
-            else
-                geblokkeerd = "Niet";
-            Console.WriteLine($"Login: {persoon.LoginNaam}/{persoon.LoginPaswoord} {geblokkeerd} Geblokkeerd");
-            Console.WriteLine($"Aantal keer ingelogd: {persoon.LoginAantal} Aantal verkeerd: {persoon.VerkeerdeLoginsAantal}");
-        }
+        Console.WriteLine("---------\nOverzicht\n---------\n");
+        Console.WriteLine($"Naam: {persoon.VoorNaam} {persoon.FamilieNaam}");
+        Console.WriteLine();
+
+        string busnr = String.Empty;
+        if (persoon.Adres.BusNr != null)
+            busnr = persoon.Adres.BusNr;
+        Console.WriteLine($"Adres:  {persoon.Adres.Straat.StraatNaam} {persoon.Adres.HuisNr} {busnr}");
+        Console.WriteLine($"\t{persoon.Adres.Straat.Gemeente.PostCode} {persoon.Adres.Straat.Gemeente.GemeenteNaam}");
+        Console.WriteLine($"\t{persoon.Adres.Straat.Gemeente.Provincie.ProvincieNaam}");
+        Console.WriteLine();
+
+        Console.WriteLine($"Geboortedatum: {persoon.GeboorteDatum}");
+        Console.WriteLine($"Geboren in: {persoon.Geboorteplaats.GemeenteNaam}");
+
+        string gender = "Man";
+        if (persoon.Geslacht == Geslacht.V)
+            gender = "Vrouw";
         else
+            gender = "Man";
+        Console.WriteLine($"Geslacht: {gender}");
+
+        Console.WriteLine($"Taal: {persoon.Taal.TaalNaam}");
+        Console.WriteLine();
+
+        Console.WriteLine($"TelefoonNr: {persoon.TelefoonNr}");
+        Console.WriteLine();
+
+        string geblokkeerd = "Niet";
+        if (persoon.Geblokkeerd)
+            geblokkeerd = "Wel";
+        else
+            geblokkeerd = "Niet";
+
+        Console.WriteLine($"Login: {persoon.LoginNaam}/{persoon.LoginPaswoord} {geblokkeerd} Geblokkeerd");
+        Console.WriteLine($"Aantal keer ingelogd: {persoon.LoginAantal} Aantal verkeerd: {persoon.VerkeerdeLoginsAantal}");
+
+        if (persoon is Profiel)
         {
             Profiel profiel = (Profiel)persoon;
 
-            Console.WriteLine("---------\nOverzicht\n---------\n");
-            Console.WriteLine($"Naam: {profiel.VoorNaam} {profiel.FamilieNaam}");
-            Console.WriteLine();
-
-            string busnr = String.Empty;
-            if (profiel.Adres.BusNr != null)
-                busnr = profiel.Adres.BusNr;
-            Console.WriteLine($"Adres: {profiel.Adres.Straat.StraatNaam} {profiel.Adres.HuisNr} {busnr}");
-            Console.WriteLine($"\t\t\t{profiel.Adres.Straat.Gemeente.PostCode} {profiel.Adres.Straat.Gemeente.GemeenteNaam}");
-            Console.WriteLine($"\t\t\t{profiel.Adres.Straat.Gemeente.Provincie.ProvincieNaam}");
-            Console.WriteLine();
-
-            Console.WriteLine($"Geboortedatum: {profiel.GeboorteDatum}");
-            Console.WriteLine($"Geboren in: {profiel.Geboorteplaats.GemeenteNaam}");
-
-            string gender = "Man";
-            if (profiel.Geslacht == Geslacht.V)
-                gender = "Vrouw";
-            else
-                gender = "Man";
-            Console.WriteLine($"Geslacht: {gender}");
-
-            Console.WriteLine($"Taal: {profiel.Taal.TaalNaam}");
-            Console.WriteLine();
-
-            Console.WriteLine($"TelefoonNr: {profiel.TelefoonNr}");
-            Console.WriteLine();
-
-            string geblokkeerd = "Niet";
-            if (profiel.Geblokkeerd)
-                geblokkeerd = "Wel";
-            else
-                geblokkeerd = "Niet";
-
-            Console.WriteLine($"Login: {profiel.LoginNaam}/{profiel.LoginPaswoord} {geblokkeerd} Geblokkeerd");
-            Console.WriteLine($"Aantal keer ingelogd: {profiel.LoginAantal} Aantal verkeerd: {profiel.VerkeerdeLoginsAantal}");
             Console.WriteLine($"Woont hier sinds: {profiel.WoontHierSindsDatum}");
             Console.WriteLine($"Emailadres: {profiel.EmailAdres}");
             Console.WriteLine($"Facebook: {profiel.FacebookNaam}");
@@ -464,12 +446,13 @@ public partial class Program
                 Console.WriteLine($"\t{intres.InteresseSoort.InteresseSoortNaam}\t\t{intres.ProfielInteresseTekst}");
             }
             Console.WriteLine();
+
         }
     }
 
     public static void ToonGegevens()
     {
-
+        ToonPersoonGegevens(CurrentAccount);
     }
 
     public static void WijzigGegevens()
@@ -504,5 +487,5 @@ public partial class Program
     //{
     //}
 
-    
+
 }
