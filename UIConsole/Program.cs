@@ -525,7 +525,7 @@ public partial class Program
                     }
                 case "Email":
                     {
-                        profiel.EmailAdres = LeesString("Emailadres: ", 30, OptionMode.Mandatory);
+                        profiel.EmailAdres = LeesString("Emailadres: ", 50, OptionMode.Mandatory);
                         ToonInfoBoodschap("Emailadres is gewijzigd");
                         break;
                     }
@@ -541,23 +541,142 @@ public partial class Program
                         ToonInfoBoodschap("Firma is gewijzigd");
                         break;
                     }
-                
+                case "Facebooknaam": 
+                    {
+                        profiel.FacebookNaam = LeesString("Facebooknaam: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Facebooknaam is gewijzigd");
+                        break;
+                    }
+                case "Website": 
+                    {
+                        profiel.FirmaNaam = LeesString("Websitenaam: ", 50, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Website url is gewijzigd");
+                        break;
+                    }
+                case "Geslacht":
+                    {
+                        var geslacht = LeesString("Geslacht (M/V): ", 1, OptionMode.Mandatory);
+                        if (geslacht == "V")
+                            profiel.Geslacht = Geslacht.V;
+                        else
+                            profiel.Geslacht = Geslacht.M;
+                          
+                        ToonInfoBoodschap("Geslacht is gewijzigd");
+                        break;
+                    }
+                case "Woont hier sinds":
+                    {
+                        profiel.WoontHierSindsDatum = LeesDatum("Woont hier sinds: (yyyy/mm/dd)", minDate, maxDate, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Woont hier sinds is gewijzigd");
+                        break;
+                    }
+                case "Taal":
+                    {
+                        var talen = accountService.GetAllTalenAsync().Result;
+                        var taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+
+                        ToonInfoBoodschap($"De gekozen taal is {taal.TaalCode} - {taal.TaalNaam}.");
+                        ToonInfoBoodschap("Taal is gewijzigd");
+                        break;
+                    }
+                case "Geboorteplaats":
+                    {
+                        Console.WriteLine("Kies geboorteplaats\n-----------------------");
+                        var letters = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+                        if (letters == null) letters = "";
+                        var gemeentes = accountService.GetAllGemeenteAsync(letters).Result;
+                        var gemeente = (Gemeente)LeesLijst("", gemeentes, gemeentes.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Optional).FirstOrDefault()!;
+
+                        ToonInfoBoodschap($"De gekozen geboorteplaats is {gemeente.GemeenteNaam}.");
+
+                        profiel.Geboorteplaats = gemeente;
+
+                        ToonInfoBoodschap("Geboorteplaats is gewijzigd");
+                        break;
+                    }
+                case "Adres":
+                    {
+                        // Ingave Adres
+                        Console.WriteLine("\n--> Ingave Adres");
+                        Console.WriteLine("Kies Woonplaats\n-----------------------");
+                        var lettersWoonplaats = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+                        if (lettersWoonplaats == null) lettersWoonplaats = "";
+                        var gemeentez = accountService.GetAllGemeenteAsync(lettersWoonplaats).Result;
+                        var woonplaats = (Gemeente)LeesLijst("", gemeentez, gemeentez.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+                        ToonInfoBoodschap($"De gekozen woonplaats is {woonplaats.GemeenteNaam}.");
+
+                        // Ingave Adres - Kies straat
+                        Console.WriteLine("Kies straat\n-----------------------");
+                        var lettersStraat = LeesString("Geef een aantal letters in van de straat:", 5, OptionMode.Optional);
+                        if (lettersStraat == null) lettersStraat = "";
+                        var straten = accountService.GetAllStratenAsync(lettersStraat, woonplaats.GemeenteId).Result;
+                        var straat = (Straat)LeesLijst("", straten, straten.Select(s => s.StraatNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+                        ToonInfoBoodschap($"De gekozen straat is {straat.StraatNaam}.\n");
+
+                        // Ingave Adres - Huis & bus NR
+                        var huisnummer = LeesString("HuisNummer:", 5, OptionMode.Mandatory)!;
+                        var busnummer = LeesString("BusNummer:", 5, OptionMode.Optional);
+
+                        profiel.Adres = new Adres()
+                        {
+                            StraatId = straat.StraatId,
+                            Straat = straat,
+                            HuisNr = huisnummer,
+                            BusNr = busnummer,
+                        };
+                        ToonInfoBoodschap("Adres is gewijzigd");
+                        break;
+                    }
+                case "Paswoord":
+                    {
+                        profiel.LoginPaswoord = LeesString("Paswoord: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Paswoord is gewijzigd");
+                        break;
+                    }
+                case "Interesses":
+                    {
+                        // Toevoegen interesses
+                        Console.WriteLine("\n-->Ingave Interesses");
+                        var interessesoorten = accountService.GetAllInteressesAsync().Result;
+                        var profielinteresses = new List<ProfielInteresse>();
+                        var interessez = LeesLijst("Kies Interesses (gescheiden door een komma)", interessesoorten, interessesoorten.Select(i => i.InteresseSoortNaam).ToList(), SelectionMode.Multiple, OptionMode.Optional);
+                        foreach (InteresseSoort intres in interessez)
+                        {
+                            string text = LeesString($"Tekst voor {intres.InteresseSoortNaam}:", 255, OptionMode.Optional);
+                            var intresse = new ProfielInteresse()
+                            {
+                                InteresseSoortId = intres.InteresseSoortId,
+                                InteresseSoort = intres,
+                                ProfielInteresseTekst = text
+                            };
+                            profielinteresses.Add(intresse);
+
+                        }
+                        foreach (ProfielInteresse interes in profielinteresses)
+                            profiel.ProfielInteresses.Add(interes);
+
+                        ToonInfoBoodschap("Interesses zijn gewijzigd");
+                        break;
+                    }
             }
+            keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional).FirstOrDefault();
 
+            if (keuze == null)
+            {
+                var exit = LeesString("Wijzigen OK ? Y/N", 1, OptionMode.Mandatory);
+                if (exit.ToUpper() == "n")
+                {
+                    keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional);
+                }
+                else
+                {
+                    ToonInfoBoodschap("Uw profiel werd gewijzigd");
+                    context.SaveChanges();
+                }
+            }
         }
-
-
-        var exit = LeesString("Wijzigen OK ? Y/N", 1, OptionMode.Mandatory);
-        if (exit.ToUpper() == "n")
-        {
-            keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional);
-        }
-        else
-        {
-            ToonInfoBoodschap("Uw profiel werd gewijzigd");
-            context.SaveChanges();
-            
-        }
+        
+        
         
     }
 
