@@ -485,7 +485,8 @@ public partial class Program
         var displayvalues = new List<string>();
         stringlijst.ForEach(i => displayvalues.Add(i));
         var keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional).FirstOrDefault();
-        
+
+        Profiel profiel = (Profiel)CurrentAccount;
 
 
         while (keuze != null)
@@ -494,23 +495,35 @@ public partial class Program
             {
                 case "Voornaam":
                     {
-                        CurrentAccount.VoorNaam = LeesString("Voornaam: ", 20, OptionMode.Mandatory);
+                        profiel.VoorNaam = LeesString("Voornaam: ", 20, OptionMode.Mandatory);
                         ToonInfoBoodschap("Voornaam is gewijzigd");
                         break;
                     }
                 case "Familienaam":
                     {
-                        CurrentAccount.FamilieNaam = LeesString("Familienaam: ", 30, OptionMode.Mandatory);
+                        profiel.FamilieNaam = LeesString("Familienaam: ", 30, OptionMode.Mandatory);
                         ToonInfoBoodschap("Familienaam is gewijzigd");
                         break;
                     }
                 case "Geboortedatum": 
                     {
-                        CurrentAccount.GeboorteDatum = LeesDatum("Geboortedatum: ", minDate, maxDate, OptionMode.Mandatory);
+                        profiel.GeboorteDatum = LeesDatum("Geboortedatum: ", minDate, maxDate, OptionMode.Mandatory);
                         ToonInfoBoodschap("Geboortedatum is gewijzigd");
                         break;
                     }
                 case "Telefoonnummer":
+                    {
+                        profiel.TelefoonNr = LeesString("Telefoonnummer: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Telefoonnummer is gewijzigd");
+                        break;
+                    }
+                case "Kennismakingstekst":
+                    {
+                        profiel.KennismakingTekst = LeesString("Kennismakingstekst: ", 255, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Kennismakingstekst is gewijzigd");
+                        break;
+                    }
+                case "Email":
                     {
 
                     }
