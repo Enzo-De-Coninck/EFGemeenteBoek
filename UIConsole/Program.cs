@@ -525,8 +525,23 @@ public partial class Program
                     }
                 case "Email":
                     {
-
+                        profiel.EmailAdres = LeesString("Emailadres: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Emailadres is gewijzigd");
+                        break;
                     }
+                case "Beroep":
+                    {
+                        profiel.BeroepTekst = LeesString("Beroep: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Beroep is gewijzigd");
+                        break;
+                    }
+                case "Firma":
+                    {
+                        profiel.FirmaNaam = LeesString("Firmanaam: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Firma is gewijzigd");
+                        break;
+                    }
+                
             }
 
         }
