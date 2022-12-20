@@ -49,7 +49,7 @@ public partial class Program
                     new MenuLijn (),
                     new MenuAction (06,"<T>oon profielgegevens", "Profielgegevens",MenuItemActive.Disabled, MenuItemVisible.Hidden,ToonGegevens),
                     new MenuAction (07,"<W>ijzig profielgegevens", "Wijzigen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,WijzigGegevens),
-                    new MenuAction (08,"<V>erwijder profiel","Verwijderen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderGegevens),
+                    new MenuAction (08,"<V>erwijder profiel","Verwijderen profiel",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderProfiel),
                 }
             ),
             new MenuLijn (),
@@ -457,30 +457,120 @@ public partial class Program
 
     public static void WijzigGegevens()
     {
+        DateTime minDate = new DateTime(1900, 1, 1);
+        DateTime maxDate = new DateTime(2023, 1, 1);
+
+        
+        var stringlijst = new List<string>()
+        {
+            "Voornaam",
+            "Familienaam",
+            "Geboortedatum",
+            "Telefoonnummer",
+            "Kennismakingstekst",
+            "Email",
+            "Beroep",
+            "Firma",
+            "Facebooknaam",
+            "Website",
+            "Geslacht",
+            "Woont hier sinds",
+            "Taal",
+            "Geboorteplaats",
+            "Adres",
+            "Paswoord",
+            "Interesses"
+        };
+
+        var displayvalues = new List<string>();
+        stringlijst.ForEach(i => displayvalues.Add(i));
+        var keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional).FirstOrDefault();
+        
+
+
+        while (keuze != null)
+        {
+            switch (keuze)
+            {
+                case "Voornaam":
+                    {
+                        CurrentAccount.VoorNaam = LeesString("Voornaam: ", 20, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Voornaam is gewijzigd");
+                        break;
+                    }
+                case "Familienaam":
+                    {
+                        CurrentAccount.FamilieNaam = LeesString("Familienaam: ", 30, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Familienaam is gewijzigd");
+                        break;
+                    }
+                case "Geboortedatum": 
+                    {
+                        CurrentAccount.GeboorteDatum = LeesDatum("Geboortedatum: ", minDate, maxDate, OptionMode.Mandatory);
+                        ToonInfoBoodschap("Geboortedatum is gewijzigd");
+                        break;
+                    }
+                case "Telefoonnummer":
+                    {
+
+                    }
+            }
+
+        }
+
+
+        var exit = LeesString("Wijzigen OK ? Y/N", 1, OptionMode.Mandatory);
+        if (exit.ToUpper() == "n")
+        {
+            keuze = LeesLijst("Wijzigen Profiel", stringlijst, displayvalues, SelectionMode.Single, OptionMode.Optional);
+        }
+        else
+        {
+            ToonInfoBoodschap("Uw profiel werd gewijzigd");
+            context.SaveChanges();
+            
+        }
+        
     }
 
-    public static void VerwijderGegevens()
+    public static void VerwijderProfiel()
     {
+        var keuze = LeesString("Verwijderen OK ? Y/N", 1, OptionMode.Mandatory);
+        if (keuze.ToUpper() == "Y")
+        {
+            context.Personen.Remove(CurrentAccount);
+            Uitloggen();
+            context.SaveChanges();
+            ToonInfoBoodschap("U werd verwijderd als gebruiker.");
+        }
+        else
+            ToonInfoBoodschap("U werd niet verwijderd als gebruiker.");
+        
     }
 
     public static void InvoerenNieuwBericht()
     {
+
     }
 
     public static void RaadplegenBerichten()
     {
+
     }
 
     public static void AntwoordBericht()
     {
+
     }
 
     public static void WijzigBericht()
     {
+
     }
 
     public static void VerwijderBericht()
     {
+
     }
 
     //public static Bericht? KiesBericht(string titel, OptionMode optionMode)
