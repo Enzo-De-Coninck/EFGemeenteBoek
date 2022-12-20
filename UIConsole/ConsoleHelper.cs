@@ -45,7 +45,7 @@ public partial class Program
 	public static void InitConsole()
 	{
 #pragma warning disable CA1416 // Validate platform compatibility
-		Console.SetWindowSize(142, 32);
+		//Console.SetWindowSize(142, 32);
 #pragma warning restore CA1416 // Validate platform compatibility
 
 		darkMode = ((string)LeesKeuzeUitLijst("Dark Mode", new List<object> { "J", "N", "j", "n" }, OptionMode.Mandatory)!).ToUpper() == "J";
