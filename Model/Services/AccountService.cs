@@ -72,4 +72,10 @@ public class AccountService
     {
         return await accountRepository.GetAllInteressesAsync();
     }
+
+    // Get alle berichttypes
+    public async Task<IEnumerable<BerichtType>> GetAllBerichtTypes()
+    {
+        return await accountRepository.GetAllBerichtTypes();
+    }
 }

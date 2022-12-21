@@ -85,4 +85,10 @@ public class SQLAccountRepository : IAccountRepository
     {
         return await context.InteresseSoorten.OrderBy(i => i.InteresseSoortId).ToListAsync();
     }
+
+    // Get alle berichttypes
+    public async Task<IEnumerable<BerichtType>> GetAllBerichtTypes()
+    {
+        return await context.BerichtTypes.OrderBy(i => i.BerichtTypeId).ToListAsync();
+    }
 }

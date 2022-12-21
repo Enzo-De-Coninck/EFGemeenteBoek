@@ -64,7 +64,7 @@ public partial class Program
 
     public static SubMenu menuBerichten = new SubMenu
     (
-        01, null, "Raadplegen bericht", MenuItemActive.Disabled, MenuItemVisible.Visible, Direction.Horizontal, new List<MenuItem>
+        01, null, "Raadplegen bericht", MenuItemActive.Disabled, MenuItemVisible.Hidden, Direction.Horizontal, new List<MenuItem>
         {
             new MenuAction (02,"<W>ijzigen","",MenuItemActive.Disabled, MenuItemVisible.Hidden,WijzigBericht),
             new MenuAction (03,"<V>erwijderen","",MenuItemActive.Disabled, MenuItemVisible.Hidden,VerwijderBericht),
@@ -204,8 +204,10 @@ public partial class Program
                     SetLabel(menu, new List<int> { 3 }, $"Ingelogd als '{(account.LoginNaam.Length > 5 ? string.Concat(account.LoginNaam.AsSpan(0, 5), "...") : account.LoginNaam)}'");
 
                     // Menu
-                    SetVisible(menu, new List<int> { 4, 6, 7, 8 }, MenuItemVisible.Visible);
+                    SetVisible(menu, new List<int> { 4, 6, 7, 8, 12, 13 }, MenuItemVisible.Visible);
+                    SetVisible(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemVisible.Visible);
                     SetActive(menu, new List<int> { 4, 6, 7, 8 }, MenuItemActive.Enabled);
+                    SetActive(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemActive.Enabled);
                     SetActive(menu, new List<int> { 3, 5 }, MenuItemActive.Disabled);
                     SetVisible(menu, new List<int> { 3, 5 }, MenuItemVisible.Hidden);
                 }
@@ -711,7 +713,16 @@ public partial class Program
 
     public static void InvoerenNieuwBericht()
     {
+        Profiel profiel = (Profiel)CurrentAccount;
+        Bericht hetBericht = new Bericht();
 
+        var berichttypes = accountService.GetAllBerichtTypes().Result;
+        string berichtTypeTekst = string.Empty;
+
+        hetBericht.BerichtType = (BerichtType)LeesLijst("Kies BerichtType", berichttypes, berichttypes.Select(b => b.BerichtTypeNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+        if (hetBericht.BerichtType.BerichtTypeTekst != null)
+            berichtTypeTekst = hetBericht.BerichtType.BerichtTypeTekst;
+        ToonInfoBoodschap($"Gekozen BerichtType is {hetBericht.BerichtType.BerichtTypeCode} - {hetBericht.BerichtType.BerichtTypeNaam} - {berichtTypeTekst}\n");
 
     }
 

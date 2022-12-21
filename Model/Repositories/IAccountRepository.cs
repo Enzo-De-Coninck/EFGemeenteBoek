@@ -15,4 +15,5 @@ public interface IAccountRepository
     public Task<IEnumerable<Gemeente>> GetAllGemeenteAsync(string aantalLetters);
     public Task<IEnumerable<Straat>> GetAllStratenAsync(string aantalLetters, int gemeenteid);
     public Task<IEnumerable<InteresseSoort>> GetAllInteressesAsync();
+    public Task<IEnumerable<BerichtType>> GetAllBerichtTypes();
 }
