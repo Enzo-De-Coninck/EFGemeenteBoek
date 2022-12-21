@@ -206,7 +206,7 @@ public partial class Program
                     // Menu
                     SetVisible(menu, new List<int> { 4, 6, 7, 8, 12, 13 }, MenuItemVisible.Visible);
                     SetVisible(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemVisible.Visible);
-                    SetActive(menu, new List<int> { 4, 6, 7, 8 }, MenuItemActive.Enabled);
+                    SetActive(menu, new List<int> { 4, 6, 7, 8, 12, 13 }, MenuItemActive.Enabled);
                     SetActive(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemActive.Enabled);
                     SetActive(menu, new List<int> { 3, 5 }, MenuItemActive.Disabled);
                     SetVisible(menu, new List<int> { 3, 5 }, MenuItemVisible.Hidden);
@@ -262,7 +262,7 @@ public partial class Program
 
         // Kies geboorteplaats
         Console.WriteLine("Kies geboorteplaats\n-----------------------");
-        var letters = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+        var letters = LeesString("Geef een aantal letters in van de gemeente", 5, OptionMode.Optional);
         if (letters == null) letters = "";
         var gemeentes = accountService.GetAllGemeenteAsync(letters).Result;
         var gemeente = (Gemeente)LeesLijst("", gemeentes, gemeentes.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Optional).FirstOrDefault()!;
@@ -272,7 +272,7 @@ public partial class Program
         // Ingave Adres
         Console.WriteLine("\n--> Ingave Adres");
         Console.WriteLine("Kies Woonplaats\n-----------------------");
-        var lettersWoonplaats = LeesString("Geef een aantal letters in van de gemeente:", 5, OptionMode.Optional);
+        var lettersWoonplaats = LeesString("Geef een aantal letters in van de gemeente", 5, OptionMode.Optional);
         if (lettersWoonplaats == null) lettersWoonplaats = "";
         var gemeentez = accountService.GetAllGemeenteAsync(lettersWoonplaats).Result;
         var woonplaats = (Gemeente)LeesLijst("", gemeentez, gemeentez.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
@@ -280,7 +280,7 @@ public partial class Program
 
         // Ingave Adres - Kies straat
         Console.WriteLine("Kies straat\n-----------------------");
-        var lettersStraat = LeesString("Geef een aantal letters in van de straat:", 5, OptionMode.Optional);
+        var lettersStraat = LeesString("Geef een aantal letters in van de straat", 5, OptionMode.Optional);
         if (lettersStraat == null) lettersStraat = "";
         var straten = accountService.GetAllStratenAsync(lettersStraat, woonplaats.GemeenteId).Result;
         var straat = (Straat)LeesLijst("", straten, straten.Select(s => s.StraatNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
@@ -332,7 +332,7 @@ public partial class Program
         var interessez = LeesLijst("Kies Interesses (gescheiden door een komma)", interessesoorten, interessesoorten.Select(i => i.InteresseSoortNaam).ToList(), SelectionMode.Multiple, OptionMode.Optional);
         foreach (InteresseSoort intres in interessez)
         {
-            string text = LeesString($"Tekst voor {intres.InteresseSoortNaam}:", 255, OptionMode.Optional);
+            string text = LeesString($"Tekst voor {intres.InteresseSoortNaam}", 255, OptionMode.Optional);
             var intresse = new ProfielInteresse()
             {
                 InteresseSoortId = intres.InteresseSoortId,
@@ -713,22 +713,98 @@ public partial class Program
 
     public static void InvoerenNieuwBericht()
     {
+        
+        
         Profiel profiel = (Profiel)CurrentAccount;
+        Gemeente deGemeente = CurrentAccount.Adres.Straat.Gemeente.Hoofdgemeente;
+        if (deGemeente == null)
+        {
+            deGemeente = CurrentAccount.Adres.Straat.Gemeente;
+        }
         Bericht hetBericht = new Bericht();
 
         var berichttypes = accountService.GetAllBerichtTypes().Result;
         string berichtTypeTekst = string.Empty;
+
+        hetBericht.Gemeente= deGemeente;
+        hetBericht.Profiel= profiel;
 
         hetBericht.BerichtType = (BerichtType)LeesLijst("Kies BerichtType", berichttypes, berichttypes.Select(b => b.BerichtTypeNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
         if (hetBericht.BerichtType.BerichtTypeTekst != null)
             berichtTypeTekst = hetBericht.BerichtType.BerichtTypeTekst;
         ToonInfoBoodschap($"Gekozen BerichtType is {hetBericht.BerichtType.BerichtTypeCode} - {hetBericht.BerichtType.BerichtTypeNaam} - {berichtTypeTekst}\n");
 
+        hetBericht.BerichtTitel = (String)LeesString($"\t\tTitel Bericht", 50, OptionMode.Mandatory);
+        hetBericht.BerichtTekst = (String)LeesString($"\t\tBericht", 255, OptionMode.Mandatory);
+        var ok = (String)LeesString("Nieuw bericht toevoegen OK? Y/N?", 1, OptionMode.Mandatory);
+        if (ok.ToUpper() == "Y")
+        {
+            hetBericht.BerichtTijdstip = DateTime.Now;
+            Console.WriteLine();
+            Console.WriteLine($"Gemeente: {deGemeente.GemeenteNaam}");
+            Console.WriteLine($"Berichttype: {hetBericht.BerichtType.BerichtTypeNaam}");
+            Console.WriteLine($"Titel: {hetBericht.BerichtTitel}");
+            Console.WriteLine($"Tekst: {hetBericht.BerichtTekst}");
+            Console.WriteLine($"Tijdstip: {hetBericht.BerichtTijdstip}");
+            Console.WriteLine($"Profiel: {hetBericht.BerichtType.BerichtTypeNaam}");
+
+            context.Berichten.Add(hetBericht);
+            context.SaveChanges();
+
+            ToonInfoBoodschap("Het bericht werd toegevoegd.");
+
+        }
+        else
+        {
+            ToonInfoBoodschap("Het bericht werd niet toegevoegd");
+        }
+
     }
 
     public static void RaadplegenBerichten()
     {
+        string puntjesLijn = "......................................................";
+        var deGemeente = CurrentAccount.Adres.Straat.Gemeente.Hoofdgemeente;
+        if (deGemeente == null)
+            deGemeente = CurrentAccount.Adres.Straat.Gemeente;
+        var berichten = deGemeente.Berichten;
 
+        Console.WriteLine($"Kies Berichten voor hoofdgemeente {deGemeente}");
+        Console.WriteLine("--------------------------------------------------\n");
+
+        foreach (Bericht bericht in berichten)
+        {
+            int counter = 0;
+            var hoofdbericht = bericht.HoofdBericht;
+
+            while (hoofdbericht != null)
+            {
+                counter++;
+                hoofdbericht = hoofdbericht.HoofdBericht;
+            }
+            // hier is het een hoofdbericht als de counter 0 is
+            if (counter == 0)
+            {
+                Console.WriteLine(puntjesLijn);
+                Console.WriteLine($"--{bericht.BerichtId}--   Van: {bericht.Profiel.LoginNaam} Op: {bericht.BerichtTijdstip}");
+                Console.WriteLine($"Type: {bericht.BerichtType.BerichtTypeNaam}");
+                Console.WriteLine($"Titel: {bericht.BerichtTitel}");
+                Console.WriteLine($"Tekst: {bericht.BerichtTekst}");
+                if (bericht.Berichten == null)
+                {
+                    Console.WriteLine(puntjesLijn);
+                    Console.WriteLine();
+                }
+            }
+            else // hier is het dus geen hoofdbericht
+            {
+                for (int teller = counter; teller > 0; teller--)
+                {
+
+                }
+            }
+
+        }
     }
 
     public static void AntwoordBericht()
