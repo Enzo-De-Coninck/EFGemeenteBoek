@@ -15,14 +15,8 @@ public partial class Program
     // ---------------------------------------
     private static readonly EFGemeenteBoekContext context = new EFGemeenteBoekContext();
 
-    //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
-    //private static readonly SecurityService securityService = new SecurityService(securityRepository);
-
     private static readonly IAccountRepository accountRepository = new SQLAccountRepository(context);
     private static readonly AccountService accountService = new AccountService(accountRepository);
-
-    //private static readonly ISecurityRepository securityRepository = new SQLSecurityRepository(context);
-    //private static readonly BerichtService BerichtService = new BerichtService(context);
 
     private static Persoon? CurrentAccount { get; set; }
     private static Bericht CurrentBericht { get; set; } = null!;
@@ -240,23 +234,30 @@ public partial class Program
 
         if (voornaam == string.Empty) return;
 
-        var familienaam = LeesString("Familienaam", 30, OptionMode.Mandatory);
-        var geboortedatum = LeesDatum("Geboortedatum (DD/MM/JJJJ)", minDate, maxDate, OptionMode.Mandatory);
-        var telefoonnr = LeesString("TelefoonNr", 30, OptionMode.Optional);
-        var kennismakingstekst = LeesString("Kennismaking Tekst", 255, OptionMode.Mandatory);
-        var emailadres = LeesString("EmailAdres", 25, OptionMode.Mandatory);
-        var beroep = LeesString("Beroep", 25, OptionMode.Optional);
-        var firma = LeesString("Firma", 25, OptionMode.Optional);
-        var facebooknaam = LeesString("FacebookNaam", 25, OptionMode.Optional);
-        var websiteurl = LeesString("Website URL", 25, OptionMode.Optional);
+        Profiel profiel = new();
+
+        profiel.VoorNaam = voornaam;
+        profiel.FamilieNaam = LeesString("Familienaam", 30, OptionMode.Mandatory);
+        profiel.GeboorteDatum = LeesDatum("Geboortedatum (DD/MM/JJJJ)", minDate, maxDate, OptionMode.Mandatory);
+        profiel.TelefoonNr = LeesString("TelefoonNr", 30, OptionMode.Optional);
+        profiel.KennismakingTekst = LeesString("Kennismaking Tekst", 255, OptionMode.Mandatory);
+        profiel.EmailAdres = LeesString("EmailAdres", 25, OptionMode.Mandatory);
+        profiel.BeroepTekst = LeesString("Beroep", 25, OptionMode.Optional);
+        profiel.FirmaNaam = LeesString("Firma", 25, OptionMode.Optional);
+        profiel.FacebookNaam = LeesString("FacebookNaam", 25, OptionMode.Optional);
+        profiel.WebsiteAdres = LeesString("Website URL", 25, OptionMode.Optional);
         var geslacht = LeesString("Geslacht (M, V)", 1, OptionMode.Mandatory);
-        var woonthiersinds = LeesDatum("Woont hier sinds (DD/MM/YYYY)", minDate, maxDate, OptionMode.Optional);
+        if (geslacht == "M")
+            profiel.Geslacht = Geslacht.M;
+        else 
+            profiel.Geslacht = Geslacht.V;
+        profiel.WoontHierSindsDatum = LeesDatum("Woont hier sinds (DD/MM/YYYY)", minDate, maxDate, OptionMode.Optional);
 
         // Kies taal
         var talen = accountService.GetAllTalenAsync().Result;
-        var taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+        profiel.Taal = (Taal)LeesLijst($"Kies taal\n----------\n", talen, talen.Select(t => t.TaalNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
 
-        ToonInfoBoodschap($"De gekozen taal is {taal.TaalCode} - {taal.TaalNaam}.");
+        ToonInfoBoodschap($"De gekozen taal is {profiel.Taal.TaalCode} - {profiel.Taal.TaalNaam}.");
 
 
         // Kies geboorteplaats
@@ -264,11 +265,13 @@ public partial class Program
         var letters = LeesString("Geef een aantal letters in van de gemeente", 5, OptionMode.Optional);
         if (letters == null) letters = "";
         var gemeentes = accountService.GetAllGemeenteAsync(letters).Result;
-        var gemeente = (Gemeente)LeesLijst("", gemeentes, gemeentes.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Optional).FirstOrDefault()!;
+        profiel.Geboorteplaats = (Gemeente)LeesLijst("", gemeentes, gemeentes.Select(g => g.GemeenteNaam).ToList(), SelectionMode.Single, OptionMode.Optional).FirstOrDefault()!;
 
-        ToonInfoBoodschap($"De gekozen geboorteplaats is {gemeente.GemeenteNaam}.");
+        ToonInfoBoodschap($"De gekozen geboorteplaats is {profiel.Geboorteplaats.GemeenteNaam}.");
 
         // Ingave Adres
+        Adres adres = new();
+
         Console.WriteLine("\n--> Ingave Adres");
         Console.WriteLine("Kies Woonplaats\n-----------------------");
         var lettersWoonplaats = LeesString("Geef een aantal letters in van de gemeente", 5, OptionMode.Optional);
@@ -282,22 +285,12 @@ public partial class Program
         var lettersStraat = LeesString("Geef een aantal letters in van de straat", 5, OptionMode.Optional);
         if (lettersStraat == null) lettersStraat = "";
         var straten = accountService.GetAllStratenAsync(lettersStraat, woonplaats.GemeenteId).Result;
-        var straat = (Straat)LeesLijst("", straten, straten.Select(s => s.StraatNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
-        ToonInfoBoodschap($"De gekozen straat is {straat.StraatNaam}.\n");
+        adres.Straat = (Straat)LeesLijst("", straten, straten.Select(s => s.StraatNaam).ToList(), SelectionMode.Single, OptionMode.Mandatory).FirstOrDefault()!;
+        ToonInfoBoodschap($"De gekozen straat is {adres.Straat.StraatNaam}.\n");
 
         // Ingave Adres - Huis & bus NR
-        var huisnummer = LeesString("HuisNummer:", 5, OptionMode.Mandatory)!;
-        var busnummer = LeesString("BusNummer:", 5, OptionMode.Optional);
-
-        Adres adres = new Adres()
-        {
-            StraatId = straat.StraatId,
-            Straat = straat,
-            HuisNr = huisnummer,
-            BusNr = busnummer,
-        };
-
-
+        adres.HuisNr = LeesString("HuisNummer:", 5, OptionMode.Mandatory)!;
+        adres.BusNr = LeesString("BusNummer:", 5, OptionMode.Optional);
 
         Console.WriteLine("\n\n");
 
@@ -307,21 +300,16 @@ public partial class Program
         string gebruikersnaam = string.Empty;
         string wachtwoord = string.Empty;
 
-        Geslacht hetGeslacht = Geslacht.M;
-        if (geslacht == "M")
-            hetGeslacht = Geslacht.M;
-        else if (geslacht == "V")
-            hetGeslacht = Geslacht.V;
-
-
 
         while (true)
         {
             gebruikersnaam = LeesString("LoginNaam", 25, OptionMode.Mandatory)!;
-            wachtwoord = LeesString("Wachtwoord", 255, OptionMode.Mandatory)!;
             if (!accountService.LoginBestaatAsync(gebruikersnaam).Result) break;
             ToonFoutBoodschap("Deze login is reeds in gebruik.");
         }
+
+        profiel.LoginNaam = gebruikersnaam;
+        profiel.LoginPaswoord = LeesString("Wachtwoord", 255, OptionMode.Mandatory)!;
 
 
         // Toevoegen interesses
@@ -342,37 +330,10 @@ public partial class Program
 
         }
 
-
-
         Console.WriteLine();
-
-        // Toevoegen profiel
-        var profiel = new Profiel()
-        {
-            VoorNaam = voornaam!,
-            FamilieNaam = familienaam!,
-            GeboorteDatum = geboortedatum!,
-            TelefoonNr = telefoonnr,
-            KennismakingTekst = kennismakingstekst,
-            EmailAdres = emailadres!,
-            BeroepTekst = beroep,
-            FirmaNaam = firma,
-            FacebookNaam = facebooknaam,
-            WebsiteAdres = websiteurl,
-            Geslacht = hetGeslacht,
-            CreatieTijdstip = DateTime.Now,
-            LaatsteUpdateTijdstip = DateTime.Now,
-            WoontHierSindsDatum = woonthiersinds,
-            Taal = taal,
-            TaalId = taal.TaalId,
-            Adres = adres,
-            AdresId = adres.AdresId,
-            LoginAantal = 0,
-            LoginNaam = gebruikersnaam,
-            LoginPaswoord = wachtwoord,
-            GeboorteplaatsId = gemeente.GemeenteId,
-            Geboorteplaats = gemeente
-        };
+        profiel.CreatieTijdstip = DateTime.Now;
+        profiel.LaatsteUpdateTijdstip = DateTime.Now;
+        profiel.LoginAantal = 0;
 
         foreach (ProfielInteresse intresse in profielinteresses)
         {
