@@ -292,14 +292,14 @@ public partial class Program
         adres.HuisNr = LeesString("HuisNummer:", 5, OptionMode.Mandatory)!;
         adres.BusNr = LeesString("BusNummer:", 5, OptionMode.Optional);
 
+        profiel.Adres = adres;
+
         Console.WriteLine("\n\n");
 
         // Login
         Console.WriteLine("\n-->Ingave Login");
 
         string gebruikersnaam = string.Empty;
-        string wachtwoord = string.Empty;
-
 
         while (true)
         {
