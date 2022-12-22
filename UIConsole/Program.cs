@@ -962,7 +962,6 @@ public partial class Program
             CurrentBericht = null;
             ToonInfoBoodschap("Het bericht werd verwijderd\n");
             RaadplegenBerichten();
-
         }
     }
 }
