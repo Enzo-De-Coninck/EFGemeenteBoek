@@ -758,12 +758,27 @@ public partial class Program
 
     }
 
-    public static void OrderNodes(Bericht Parent, ref List<Bericht> OrderedList)
+    public static void OrderNodes(Bericht Parent, ref List<Bericht> OrderedList) // Robert-Jan zijn legendarische functie :p
     {
         OrderedList.Add(Parent);
-        foreach (var child in Parent.Berichten)
+        if (Parent.Berichten != null)
         {
-            OrderNodes(child, ref OrderedList);
+            foreach (var child in Parent.Berichten)
+            {
+                OrderNodes(child, ref OrderedList);
+            }
+        }
+    }
+
+    public static void OrderKinderen(Bericht Parent, ref List<Bericht> KillList) // Mijn poging om hetzelfde te doen maar dan voor te deleten
+    {
+        KillList.Add(Parent);
+        if (Parent.Berichten != null)
+        {
+            foreach (var child in Parent.Berichten)
+            {
+                OrderKinderen(child, ref KillList);
+            }
         }
     }
 
@@ -811,7 +826,7 @@ public partial class Program
                 Console.WriteLine($"Type: {bericht.BerichtType.BerichtTypeNaam}");
                 Console.WriteLine($"Titel: {bericht.BerichtTitel}");
                 Console.WriteLine($"Tekst: {bericht.BerichtTekst}");
-                if (bericht.Berichten.Count == 0)
+                if (bericht.Berichten == null)
                 {
                     Console.WriteLine(puntjesLijn);
                     Console.WriteLine();
@@ -895,11 +910,59 @@ public partial class Program
 
     public static void WijzigBericht()
     {
-        Console.WriteLine("wijzig");
+        Bericht deBericht = CurrentBericht;
+        var antwoord = LeesString("Wijzig berichttekst", 255, OptionMode.Mandatory);
+        var yesno = LeesString("Bericht wijzigen ok? Y/N", 1, OptionMode.Mandatory);
+
+        if (yesno.ToUpper() == "Y")
+        {
+            deBericht.BerichtTekst = antwoord;
+            
+            Console.WriteLine($"Gemeente: {deBericht.Gemeente.GemeenteNaam}");
+            Console.WriteLine($"BerichtType: {deBericht.BerichtType.BerichtTypeNaam}");
+            Console.WriteLine($"Titel: {deBericht.BerichtTitel}");
+            Console.WriteLine($"Tekst: {deBericht.BerichtTekst}");
+            Console.WriteLine($"Tijdstip: {deBericht.BerichtTijdstip}");
+            Console.WriteLine($"Profiel: {deBericht.Profiel.LoginNaam}");
+
+            context.SaveChanges();
+            ToonInfoBoodschap("Het bericht werd gewijzigd");
+        }
     }
 
     public static void VerwijderBericht()
     {
-        Console.WriteLine("verwijder");
+        var keuze = LeesString("Bericht verwijderen? Y/N ", 1, OptionMode.Mandatory);
+        if (keuze.ToUpper() == "Y")
+        {
+            var berichten = CurrentBericht.Berichten.ToList();
+            List<Bericht> OrderedBerichten = new();
+
+            foreach (Bericht bericht in berichten)
+            {
+                OrderKinderen(bericht, ref OrderedBerichten);
+            }
+            berichten = OrderedBerichten;
+            berichten.Reverse();
+            berichten.Add(CurrentBericht);
+
+            Console.WriteLine($"Gemeente: {CurrentBericht.Gemeente.GemeenteNaam}");
+            Console.WriteLine($"BerichtType: {CurrentBericht.BerichtType.BerichtTypeNaam}");
+            Console.WriteLine($"Titel: {CurrentBericht.BerichtTitel}");
+            Console.WriteLine($"Tekst: {CurrentBericht.BerichtTekst}");
+            Console.WriteLine($"Tijdstip: {CurrentBericht.BerichtTijdstip}");
+            Console.WriteLine($"Profiel: {CurrentBericht.Profiel.LoginNaam}");
+
+            foreach (Bericht bericht in berichten)
+            {
+                context.Remove(bericht);
+            }
+            
+            context.SaveChanges();
+            CurrentBericht = null;
+            ToonInfoBoodschap("Het bericht werd verwijderd\n");
+            RaadplegenBerichten();
+
+        }
     }
 }
