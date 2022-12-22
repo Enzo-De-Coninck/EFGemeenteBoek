@@ -201,6 +201,9 @@ public partial class Program
 
 		foreach (var item in menuItem.MenuItems)
 		{
+			if (item.Visible == MenuItemVisible.Hidden)
+				continue;
+
 			var label = item.Label;
 
 			if (!(item is MenuLijn))

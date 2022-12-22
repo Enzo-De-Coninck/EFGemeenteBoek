@@ -28,7 +28,6 @@ public partial class Program
     private static Bericht CurrentBericht { get; set; } = null!;
 
 
-
     public static string MenuGegevens => $"{(CurrentAccount == null ? "Niet ingelogd" : (CurrentAccount is Profiel ? "PROFIEL: " : "MEDEWERKER: ") + "Nr: " + CurrentAccount.PersoonId + " - Naam: " + CurrentAccount.LoginNaam)}";
 
     // ----
@@ -205,9 +204,9 @@ public partial class Program
 
                     // Menu
                     SetVisible(menu, new List<int> { 4, 6, 7, 8, 12, 13 }, MenuItemVisible.Visible);
-                    SetVisible(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemVisible.Visible);
+                    SetVisible(menuBerichten, new List<int> { 1, 4 }, MenuItemVisible.Visible);
                     SetActive(menu, new List<int> { 4, 6, 7, 8, 12, 13 }, MenuItemActive.Enabled);
-                    SetActive(menuBerichten, new List<int> { 1, 2, 3, 4 }, MenuItemActive.Enabled);
+                    SetActive(menuBerichten, new List<int> { 1, 4 }, MenuItemActive.Enabled);
                     SetActive(menu, new List<int> { 3, 5 }, MenuItemActive.Disabled);
                     SetVisible(menu, new List<int> { 3, 5 }, MenuItemVisible.Hidden);
                 }
@@ -713,8 +712,6 @@ public partial class Program
 
     public static void InvoerenNieuwBericht()
     {
-        
-        
         Profiel profiel = (Profiel)CurrentAccount;
         Gemeente deGemeente = CurrentAccount.Adres.Straat.Gemeente.Hoofdgemeente;
         if (deGemeente == null)
@@ -761,19 +758,43 @@ public partial class Program
 
     }
 
+    public static void OrderNodes(Bericht Parent, ref List<Bericht> OrderedList)
+    {
+        OrderedList.Add(Parent);
+        foreach (var child in Parent.Berichten)
+        {
+            OrderNodes(child, ref OrderedList);
+        }
+    }
+
     public static void RaadplegenBerichten()
     {
+        CurrentBericht = null;
         string puntjesLijn = "......................................................";
         var deGemeente = CurrentAccount.Adres.Straat.Gemeente.Hoofdgemeente;
         if (deGemeente == null)
             deGemeente = CurrentAccount.Adres.Straat.Gemeente;
-        var berichten = deGemeente.Berichten;
+        var berichten = deGemeente.Berichten.ToList();
 
-        Console.WriteLine($"Kies Berichten voor hoofdgemeente {deGemeente}");
+        List<Bericht> OrderedBerichten = new();
+        foreach(Bericht bericht in berichten)
+        {
+            if (bericht.HoofdBerichtId == null)
+                OrderNodes(bericht, ref OrderedBerichten);
+        }
+
+        berichten = OrderedBerichten;
+
+
+        Console.WriteLine($"Kies Berichten voor hoofdgemeente {deGemeente.GemeenteNaam}");
         Console.WriteLine("--------------------------------------------------\n");
 
-        foreach (Bericht bericht in berichten)
+        int aantalberichten = 0;
+
+        for (var index = 0; index < berichten.Count(); index++)
         {
+            Bericht bericht = berichten[index];
+            aantalberichten++;
             int counter = 0;
             var hoofdbericht = bericht.HoofdBericht;
 
@@ -786,11 +807,11 @@ public partial class Program
             if (counter == 0)
             {
                 Console.WriteLine(puntjesLijn);
-                Console.WriteLine($"--{bericht.BerichtId}--   Van: {bericht.Profiel.LoginNaam} Op: {bericht.BerichtTijdstip}");
+                Console.WriteLine($"--{index+1/*bericht.BerichtId*/}--   Van: {bericht.Profiel.LoginNaam} Op: {bericht.BerichtTijdstip}");
                 Console.WriteLine($"Type: {bericht.BerichtType.BerichtTypeNaam}");
                 Console.WriteLine($"Titel: {bericht.BerichtTitel}");
                 Console.WriteLine($"Tekst: {bericht.BerichtTekst}");
-                if (bericht.Berichten == null)
+                if (bericht.Berichten.Count == 0)
                 {
                     Console.WriteLine(puntjesLijn);
                     Console.WriteLine();
@@ -799,32 +820,86 @@ public partial class Program
             else // hier is het dus geen hoofdbericht
             {
                 for (int teller = counter; teller > 0; teller--)
-                {
+                    Console.Write("\t");
 
-                }
+                Console.WriteLine(puntjesLijn);
+
+                for (int teller = counter; teller > 0; teller--)
+                    Console.Write("\t");
+
+                Console.WriteLine($"--{index + 1/*bericht.BerichtId*/}--   Van: {bericht.Profiel.LoginNaam} Op: {bericht.BerichtTijdstip}");
+
+
+                for (int teller = counter; teller > 0; teller--)
+                    Console.Write("\t");
+
+                Console.WriteLine($"Tekst: {bericht.BerichtTekst}");
             }
-
         }
+
+        var gekozenberichtId = LeesInt("Geef het volgnummer uit de lijst", 1, aantalberichten, OptionMode.Optional);
+        
+        if (gekozenberichtId != null)
+        {
+            CurrentBericht = berichten[(int)gekozenberichtId - 1];/*context.Berichten.Find(gekozenberichtId);*/
+
+            Console.WriteLine($"\nGekozen bericht is {CurrentBericht.BerichtTijdstip} - {CurrentBericht.BerichtTitel} - {CurrentBericht.BerichtTekst}\n");
+            
+            if (CurrentBericht.Profiel.PersoonId == CurrentAccount.PersoonId)
+            {
+                SetVisible(menuBerichten, new List<int> { 2, 3 }, MenuItemVisible.Visible);
+                SetActive(menuBerichten, new List<int> { 2, 3 }, MenuItemActive.Enabled);
+            }
+            else
+            {
+                SetActive(menuBerichten, new List<int> { 2, 3 }, MenuItemActive.Enabled);
+                SetVisible(menuBerichten, new List<int> { 2, 3 }, MenuItemVisible.Hidden);
+                SetActive(menuBerichten, new List<int> { 2, 3 }, MenuItemActive.Disabled);
+            }
+            ToonMenuHorizontal(menuBerichten);
+        }
+        
     }
 
     public static void AntwoordBericht()
     {
+        var antwoord = LeesString("Antwoord", 255, OptionMode.Mandatory);
+        var keuze = LeesString("Antwoord toevoegen OK ? Y/N", 1, OptionMode.Mandatory);
+        Console.WriteLine();
 
+        if (keuze.ToUpper() == "Y")
+        {
+            Bericht deBericht = new Bericht();
+            deBericht.BerichtTijdstip = DateTime.Now;
+            deBericht.Profiel = (Profiel)CurrentAccount;
+            deBericht.HoofdBericht = CurrentBericht;
+            deBericht.Gemeente = CurrentBericht.Gemeente;
+            deBericht.BerichtType = CurrentBericht.BerichtType;
+            deBericht.BerichtTitel = CurrentBericht.BerichtTitel;
+            deBericht.BerichtTekst = antwoord;
+
+            Console.WriteLine($"Gemeente: {deBericht.Gemeente.GemeenteNaam}");
+            Console.WriteLine($"BerichtType: {deBericht.BerichtType.BerichtTypeNaam}");
+            Console.WriteLine($"Titel: {deBericht.BerichtTitel}");
+            Console.WriteLine($"Tekst: {deBericht.BerichtTekst}");
+            Console.WriteLine($"Tijdstip: {deBericht.BerichtTijdstip}");
+            Console.WriteLine($"Profiel: {deBericht.Profiel.LoginNaam}");
+            context.Berichten.Add(deBericht);
+            context.SaveChanges();
+            ToonInfoBoodschap("Het bericht werd toegevoegd");
+
+            Console.WriteLine();
+            RaadplegenBerichten();
+        }
     }
 
     public static void WijzigBericht()
     {
-
+        Console.WriteLine("wijzig");
     }
 
     public static void VerwijderBericht()
     {
-
+        Console.WriteLine("verwijder");
     }
-
-    //public static Bericht? KiesBericht(string titel, OptionMode optionMode)
-    //{
-    //}
-
-
 }
